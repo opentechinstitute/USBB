@@ -947,7 +947,7 @@ h1>a,h2>a,h3>a,h4>a,h5>a,h6>a {
   -webkit-flex:0 0 66.666667%;
   -ms-flex:0 0 66.666667%;
   flex:0 0 66.666667%;
-  max-width:66.666667%
+  max-width:100%
  }
  .col-lg-9 {
   -webkit-box-flex:0;
@@ -1310,8 +1310,8 @@ h1>a,h2>a,h3>a,h4>a,h5>a,h6>a {
  transition-property:height
 }
 .post-body-wrapper {
- max-width:1000px;
- margin:0 auto
+ max-width:1500px;
+ margin:5%
 }
 @media (min-width:768px) {
  .post-aside-wrapper {
