@@ -25,3 +25,5 @@ Open them in R and run them in the order:
 
 That will produce the geojson and json files that the Mapbox map embedded in the project landing page needs. The pipeline also produces 
 several other R objects as auxilliary files. These are data files that are used in mapbox_pipeline_wrapper.
+
+As I add more files and make this pipeline more functional, I'll be updating this README. 
