@@ -85,4 +85,3 @@ save(todo_copies, file="MLab_data_census_tract")
 save(D_477, file="477_data")
 save(D_state_house, file="MLab_data_state_house")
 save(D_state_senate, file="MLab_data_state_senate")
-

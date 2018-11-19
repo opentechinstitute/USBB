@@ -7,9 +7,8 @@ library(tidycensus)
 library(sf)
 library(rmapshaper)
 
-setwd("C:/users/nickt/desktop/mlab_interactive_client_server/")
-
-
+###Set this to directory on your computer where you'll be working on this project 
+setwd("Set this to the directory")
 
 ################################
 #THIS GETS THE TRACT LEVEL DATA#
@@ -20,14 +19,11 @@ load("477_data")
 load("MLab_data_state_house")
 load("MLab_data_state_senate")
 
-
 #change max to copies below to get averages or todo_avg_max to get the averaged maxes
 names(D_477)[1]<-"GEOID"
 D_477$GEOID<-as.character(D_477$GEOID)
 D_477$GEOID<-as.factor(D_477$GEOID)
 D_joined<-left_join(todo_copies, totalpop_sf, by = "tract")
-
-##
 D_mlab_census_shape<-left_join(D_477, totalpop_sf)%>%na.omit
 D_mlab_census_shape_477<-left_join(D_mlab_census_shape, D_joined, by = "GEOID")
 
@@ -60,7 +56,6 @@ m_lab_477_final_county_grouped<-m_lab_477_final_county%>%group_by(county)%>%
     counts = sum(na.omit(counts)))%>%
   mutate(diff =med_dl- mlab_speed)
 
-
 D<-left_join(totalpop_sf_county,as.data.frame(m_lab_477_final_county_grouped)[,-6],by ="county")
 
 ####splitting the county data into different layers
@@ -78,9 +73,6 @@ D_data<-data.frame(county = D$county, speed_mlab=D$speed_mlab, speed_477=D$speed
                    speed_diff=D$speed_diff, counts = D$counts)
 write_json(D_data, path = "mapbox_data_county.json")
 
-
-
-
 #######################
 #NOW JOIN THE DATASETS#
 #######################
@@ -89,7 +81,6 @@ m_lab_477_final_sf <- st_as_sf(mlab_speeds)
 
 st_crs(m_lab_477_final_sf)<-st_crs(df_final)
 m_lab_477_final_leg_sf<-st_join(m_lab_477_final_sf, df_final)
-
 
 m_lab_final_leg_dis<-m_lab_477_final_leg_sf%>%group_by(GEOID.y, FUNCSTAT)%>%
   summarise(
@@ -100,7 +91,6 @@ m_lab_final_leg_dis<-m_lab_477_final_leg_sf%>%group_by(GEOID.y, FUNCSTAT)%>%
   )%>%mutate(
     diff= med_dl.x-med_dl.y
   )
-
 
 D_state_house_med<-D_state_house%>%group_by(GEOID)%>%summarise(med = median(med_speed))
 D_states<-left_join(dataflow_lower_df, D_state_house_med)

@@ -12,9 +12,13 @@ library(tidycensus)
 library(purrr)
 library(zipcode)
 library(maps)
-setwd("C:/Users/nickt/Desktop/USB_folder")
-source("pipeline_functions.R")
 
+###Set this to directory on your computer where you'll be working on this project 
+setwd("Set this to the directory")
+
+###If pipeline_functions.R is in the same directory as this file, you'll be OK. If not, set this
+###to the folder containing it
+source("pipeline_functions.R")
 
 #################
 #Tract-level I/O#
@@ -92,17 +96,14 @@ for(i in 1:length(state_fips)){
     b<-state_legislative_districts(state=state_fips[i], house="lower")
   }
   
-  
   cong_upper[[i]]<-st_as_sf(a)%>%select(STATEFP, GEOID ,geometry )
   cong_upper[[i]]$FUNCSTAT<-"upper"
   
   cong_lower[[i]]<-st_as_sf(b)%>%select(STATEFP, GEOID ,geometry )
   cong_lower[[i]]$FUNCSTAT<-"lower"
   
-  
   cong_lower[[i]]<-st_transform(cong_lower[[i]],"+proj=longlat +datum=WGS84")
   cong_upper[[i]]<-st_transform(cong_upper[[i]],"+proj=longlat +datum=WGS84")
-  
 }
 
 upper_rm<-lapply(cong_upper, nrow)%>%lapply(function(x) return(is.null(x)))%>%unlist%>%which
