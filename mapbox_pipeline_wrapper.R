@@ -94,12 +94,17 @@ D_new<-data.frame(geom = simplepolys$geometry, county = simplepolys$county)%>%st
 names(geojson_county_final)<-c("county","date_range","speed_mlab","counts","speed_477","speed_diff","geom")
 st_geometry(geojson_county_final) <- "geom"
 
+geojson_county_final<-geojson_county_final%>%mutate(speed_diff_perc = speed_477/speed_mlab)
+
 D_data_county<-data.frame(county = geojson_county_final$county, 
                           speed_mlab=geojson_county_final$speed_mlab, 
                           speed_477=geojson_county_final$speed_477, 
-                          speed_diff=geojson_county_final$speed_diff, 
+                          speed_diff=geojson_county_final$speed_diff,
+                          speed_diff_perc=geojson_county_final$speed_diff_perc,
                           counts = geojson_county_final$counts, 
                           date_range = geojson_county_final$date_range)
+
+
 
 #############################################################
 #Prepare state legislature data and spatially join with M-lab#
@@ -164,7 +169,9 @@ senate_shape<-df_final%>%filter(FUNCSTAT=="upper")%>%select(GEOID, geometry)
 senate_df<-left_join(D_senate, senate_shape)
 
 legis_df <-bind_rows(senate_df, house_df)
-legis_comp_df <-left_join(m_lab_final_leg_dis, legis_df, by = c("GEOID","date_range","house"))
+legis_comp_df <-left_join(m_lab_final_leg_dis, legis_df, by = c("GEOID","date_range","house"))%>%
+  mutate(speed_diff_perc = speed_477/speed_mlab)
+
 
 #########################
 #Output the Mapbox jsons#
@@ -186,6 +193,7 @@ D_data<-data.frame(house_num=legis_comp_df$GEOID,
                    speed_mlab=legis_comp_df$med_speed, 
                    speed_477=legis_comp_df$speed_477, 
                    speed_diff=legis_comp_df$speed_diff,
+                   speed_diff_perc=legis_comp_df$speed_diff_perc,
                    counts = legis_comp_df$counts.y,
                    date_range=legis_comp_df$date_range
 )
