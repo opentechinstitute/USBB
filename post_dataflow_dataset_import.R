@@ -130,15 +130,16 @@ D_477_2014_dec_prov <- load_477_data(query_477_prov, "thieme.477_dec_2014")
 
 D_state_house <- load_time_chunks(query_house)
 house_count<-query_exec(house_count_query, project = project, use_legacy_sql=FALSE, max_pages = Inf)
-house_count%>%
 names(D_state_house)[7]<-"GEOID"
 names(house_count)[3]<-"GEOID"
+
 D_house_sum<-left_join(D_state_house, house_count, by = c("GEOID", "day"))%>%na.omit
 
 D_state_senate <- load_time_chunks(query_senate)
 senate_count<-query_exec(senate_count_query,project = project, use_legacy_sql=FALSE, max_pages = Inf)
 names(D_state_senate)[7]<-"GEOID"
 names(senate_count)[3]<-"GEOID"
+
 D_senate_sum<-left_join(D_state_senate, senate_count, by = c("GEOID","day"))%>%na.omit
 
 
@@ -151,5 +152,7 @@ save(D_477_2015_dec_prov, file="D_477_2015_dec_prov")
 save(D_477_2015_jun_prov, file="D_477_2015_jun_prov")
 save(D_477_2014_dec_prov, file="D_477_2014_dec_prov")
 
-save(D_house_sum, file="MLab_data_state_house")
-save(D_senate_sum, file="MLab_data_state_senate")
+save(D_state_house, file="MLab_data_state_house")
+save(house_count, file="house_counts")
+save(D_state_senate, file="MLab_data_state_senate")
+save(senate_count, file="senate_counts")

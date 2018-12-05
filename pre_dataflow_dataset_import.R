@@ -12,6 +12,7 @@ library(tidycensus)
 library(purrr)
 library(zipcode)
 library(maps)
+library(tigris)
 
 ###Set this to directory on your computer where you'll be working on this project 
 setwd("Set this to the directory")
@@ -139,3 +140,16 @@ dataflow_upper_df<-left_join(df_final_upper,state_cross)%>%select(GEOID, geometr
 
 to_dataflow_string(dataflow_lower_df, "dataflow_mapbox1_lower.json")
 to_dataflow_string(dataflow_upper_df, "dataflow_mapbox1_upper.json")
+
+##########
+#ZCTA I/O#
+##########
+setwd("C:/users/nickt/desktop/USB_folder/")
+df <- zctas(cb = TRUE)
+df_zcta<-df%>%st_as_sf
+D_muni <-read.csv("Community Broadband Networks-filtered.csv")
+df$ZCTA5CE10<-as.character(df$ZCTA5CE10)
+D_muni$ZIP<-as.character(D_muni$ZIP)
+df_zcta_muni<-left_join(D_muni,df_zcta, by = c("ZIP"="ZCTA5CE10"))
+df_zcta_muni<-df_zcta_muni%>%select(geometry,ZIP)%>%st_as_sf
+st_write(df_zcta_muni, "muni_broadband.geojson")
