@@ -46,7 +46,27 @@ process_477 <-function(D){
   return(D)
 }
 
+process_477_prov <-function(D){
+  D$med_dl<-as.numeric(D$med_dl)
+  D$Provider_name<-as.character(D$Provider_name)
+  names(D)[3]<-"GEOID"
+  D$GEOID<-as.character(D$GEOID)
+  D$GEOID<-as.factor(D$GEOID)
+  return(D)
+}
+
 ###loading different time chunks
+load_477_data<-function(query,table){
+  start_loc<-str_locate(query,"TABLE")
+  
+  final_query<-str_c(str_sub(query, 1, start_loc[1]-1), table, 
+        str_sub(query, start_loc[2]+1,nchar(query)), collapse="")
+  
+  result<-query_exec(final_query, project = project, use_legacy_sql=FALSE, max_pages = Inf)
+  
+  return(result)
+}
+
 load_time_chunks<-function(query){
   
   start_loc<-str_locate(query,"GROUP")
