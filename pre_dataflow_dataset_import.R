@@ -122,8 +122,9 @@ save(df_final, file = "legislative_mlab")
 data(state.fips)
 
 state_cross<-state.fips[,c(1,6)]%>%
-  mutate(state=polyname%>%str_split(":")%>%lapply(function(x)return(x[1]))%>%unlist)%>%
-  select(fips, state)%>%distinct
+  mutate(state=polyname%>%str_split(":")%>%lapply(function(x)return(x[1]))%>%unlist)
+
+state_cross<-state_cross[,c(1,3)]%>%distinct
 
 state_cross$fips<-ifelse(nchar(state_cross$fips)==1, str_c("0", state_cross$fips), state_cross$fips)
 names(state_cross)[1]<-"STATEFP"
@@ -131,15 +132,16 @@ missing_fi<-c("02", "15")
 missing_name<-c("alaska","hawaii")
 missing_data <- data.frame("STATEFP"=missing_fi, "state"=missing_name)
 state_cross<-rbind(state_cross, missing_data)
+df_final_lower <- df_final%>%filter(FUNCSTAT=="lower")%>%select(GEOID, geometry,STATEFP)
+df_final_upper <- df_final%>%filter(FUNCSTAT=="upper")%>%select(GEOID, geometry,STATEFP)
 
-df_final_lower <- df_final%>%filter(FUNCSTAT=="lower")
-df_final_upper <- df_final%>%filter(FUNCSTAT=="upper")
+dataflow_lower_df<-left_join(df_final_lower,state_cross)
+dataflow_upper_df<-left_join(df_final_upper,state_cross)
 
-dataflow_lower_df<-left_join(df_final_lower,state_cross)%>%select(GEOID, geometry, state)
-dataflow_upper_df<-left_join(df_final_upper,state_cross)%>%select(GEOID, geometry, state)
 
-to_dataflow_string(dataflow_lower_df, "dataflow_mapbox1_lower.json")
-to_dataflow_string(dataflow_upper_df, "dataflow_mapbox1_upper.json")
+to_dataflow_string(dataflow_lower_df, "dataflow_mapbox1_lower_combine.json")
+to_dataflow_string(dataflow_upper_df, "dataflow_mapbox1_upper_combine.json")
+
 
 ##########
 #ZCTA I/O#

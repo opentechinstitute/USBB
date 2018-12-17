@@ -19,7 +19,7 @@ library(jsonlite)
 
 setwd("C:/Users/nickt/Desktop/USB_folder")
 ### setwd("Set this to the directory")
-load("MLab_data_census_tract")
+load("MLab_data_census_tract1")
 load("D_477_2017_jun_prov")
 load("D_477_2016_dec_prov")
 load("D_477_2016_jun_prov")
@@ -30,6 +30,7 @@ load("totalpop_sf_county")
 load("totalpop_sf_tract")
 load("legislative_mlab")
 source("pipeline_functions.R")
+
 
 ##################################
 #Prepare census county-level data#
@@ -67,7 +68,9 @@ names(D_477)[3]<-"GEOID"
 D_joined<-left_join(D, totalpop_sf, by = "tract")
 
 D_joined_summed<-D_joined%>%mutate(GEOID=str_sub(GEOID,1,5))%>%group_by(GEOID, date_range)%>%
-  summarise(mlab_speed=median(med_speed, na.rm = TRUE), counts = sum(count_ip, na.rm = TRUE))
+  summarise(mlab_speed=median(med_speed, na.rm = TRUE),
+            mlab_up_speed=median(med_speed, na.rm = TRUE),
+            counts = sum(count_ip, na.rm = TRUE))
 
 rm(D)
 
@@ -95,6 +98,7 @@ D_plot_f<-D_plot_f%>%mutate(speed_diff_perc = speed_477/mlab_speed)
 
 D_data_county<-data.frame(county = D_plot_f$GEOID , 
                           speed_mlab=D_plot_f$mlab_speed , 
+                          speed_up=D_plot_f$mlab_up_speed,
                           speed_477=D_plot_f$speed_477, 
                           speed_diff=D_plot_f$diff,
                           speed_diff_perc=D_plot_f$speed_diff_perc,
@@ -123,39 +127,33 @@ m_lab_final_leg_dis<-m_lab_477_final_leg_sf%>%group_by(GEOID.y, FUNCSTAT,date_ra
   summarise(
     speed_477=median(speed_477),
     ### Calculate average speeds, weighted by test counts
-    speed_mlab=sum(na.omit(mlab_speed *counts))/(sum(na.omit(counts))), 
+    speed_mlab=sum(mlab_speed *counts, na.rm = TRUE)/(sum(counts, na.rm = TRUE)), 
+    speed_up_mlab = sum(mlab_up_speed *counts, na.rm = TRUE)/(sum(counts, na.rm = TRUE)), 
+    counts_avg = median(counts, na.rm=TRUE)
     
   )%>%mutate(
     speed_diff= speed_477-speed_mlab
   )
 
-simplepolys <- ms_simplify(m_lab_final_leg_dis)%>%st_as_sf
-
-D_lower<-data.frame(geom = simplepolys$geom, house=simplepolys$FUNCSTAT,
-                    house_num = simplepolys$GEOID)%>%
-  filter(as.character(house)=="lower")%>%st_as_sf()
-
-D_upper<-data.frame(geom = simplepolys$geom, house=simplepolys$FUNCSTAT,
-                    house_num = simplepolys$GEOID)%>%
-  filter(house=="upper")%>%st_as_sf()
 
 ### This section does the legistlative data by actual spatial joins which makes the mlab 
 ### accurate but makes comparisons between 477 and mlab not quite even. 
 
-load("MLab_data_state_house")
-load("MLab_data_state_senate")
-load("house_counts")
-load("senate_counts")
+load("MLab_data_state_house_2")
+load("MLab_data_state_senate_2")
+load("house_counts_2")
+load("senate_counts_2")
 
 D_house<-data.frame(D_state_house, house=rep("lower", nrow(D_state_house)))%>%
   group_by(GEOID, house,date_range)%>%summarise(
-    med_speed =median(med_speed, rm.na=TRUE)
+    med_speed =median(med_speed, na.rm=TRUE),
+    med_up_speed =median(med_up_speed, na.rm=TRUE)
     )
 
 day_range<-D_state_house%>%select(day, date_range)%>%distinct
 
 D_house_counts<-left_join(day_range, house_count)%>%group_by(GEOID,date_range)%>%
-  summarise(counts = sum(count_ip, rm.na=TRUE))
+  summarise(counts = sum(count_ip, na.rm=TRUE))
   
 D_house_joined <- left_join(D_house, D_house_counts)
 
@@ -164,13 +162,14 @@ house_df<-left_join(D_house_joined, house_shape)
 
 D_senate<-data.frame(D_state_senate, house=rep("upper", nrow(D_state_senate)))%>%
   group_by(GEOID, house,date_range)%>%summarise(
-    med_speed =median(med_speed, rm.na=TRUE)
+    med_speed =median(med_speed, na.rm = TRUE),
+    med_up_speed =median(med_up_speed, na.rm=TRUE)
   )
 
 day_range<-D_state_senate%>%select(day, date_range)%>%distinct
 
 D_senate_counts<-left_join(day_range, senate_count)%>%group_by(GEOID,date_range)%>%
-  summarise(counts = sum(count_ip, rm.na=TRUE))
+  summarise(counts = sum(count_ip, na.rm=TRUE))
 
 D_senate_joined <- left_join(D_senate, D_senate_counts)
 
@@ -178,6 +177,7 @@ legis_df <-bind_rows(D_senate_joined, D_house_joined)
 legis_comp_df <-left_join(m_lab_final_leg_dis, legis_df, by = c("GEOID.y"="GEOID","date_range","FUNCSTAT"="house"))%>%
   mutate(speed_diff_perc = speed_477/speed_mlab)
 
+na(joined_ests$med_speed), joined_ests$speed_up_mlab, joined_ests$med_speed)
 
 #########################
 #Output the Mapbox jsons#
@@ -194,10 +194,10 @@ st_write(D_new, "full_speed_data_census_base_use.geojson")
 
 ### This section makes up the data layer.
 
-st_geometry(legis_comp_df) <- "geom"
 D_data<-data.frame(house_num=legis_comp_df$GEOID.y, 
                    house=legis_comp_df$FUNCSTAT,
-                   speed_mlab=legis_comp_df$med_speed, 
+                   speed_mlab=legis_comp_df$med_speed,
+                   speed_up=legis_comp_df$med_up_speed,
                    speed_477=legis_comp_df$speed_477, 
                    speed_diff=legis_comp_df$speed_diff,
                    speed_diff_perc=legis_comp_df$speed_diff_perc,
@@ -222,6 +222,6 @@ D_data<-data.frame(house_num=legis_comp_df$GEOID.y,
   data_layer_json<-toJSON(json_list)
 
   writeLines(data_layer_json, 
-             con=paste(c("mapbox_leg_county_counts.json"),collapse = "")
+             con=paste(c("mapbox_leg_county_counts_new_agg_up.json"),collapse = "")
   )
 
