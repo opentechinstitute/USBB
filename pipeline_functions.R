@@ -75,7 +75,7 @@ process_477 <-function(D){
 process_477_prov <-function(D){
   D$med_dl<-as.numeric(D$med_dl)
   D$Provider_name<-as.character(D$Provider_name)
-  names(D)[3]<-"GEOID"
+  names(D)[4]<-"GEOID"
   D$GEOID<-as.character(D$GEOID)
   D$GEOID<-as.factor(D$GEOID)
   return(D)
