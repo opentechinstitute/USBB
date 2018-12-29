@@ -13,7 +13,6 @@ load("legislative_mlab")
 ##################
 #BigQuery queries#
 ##################
-#`thieme.D_deserts_final_minrtt_state`
 
 query_agg_ip<-"#standardSQL
 
@@ -22,7 +21,7 @@ APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
 APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`thieme.dataflow_county_final_copy`
+`thieme.Aggregated_MLab_DL_census`
 
 GROUP BY
 day, tract"
@@ -33,7 +32,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`thieme.test_UL`
+`thieme.Aggregated_MLab_UL_census`
 
 GROUP BY
 day, tract"
@@ -46,7 +45,7 @@ APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`thieme.dataflow_lower_test_final`
+`thieme.Aggregated_MLab_DL_state_house`
 
 GROUP BY
 client_lat, client_lon, day, tract"
@@ -57,7 +56,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 tract
 FROM
-`thieme.mixed_house`
+`thieme.Aggregated_MLab_UL_state_house`
 
 GROUP BY
 day, tract"
@@ -71,7 +70,7 @@ APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`thieme.dataflow_upper_test_final`
+`thieme.Aggregated_MLab_DL_state_senate`
 
 
 GROUP BY
@@ -83,7 +82,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 senate_tract
 FROM
-`thieme.UL_test_senate_joined`
+`thieme.Aggregated_MLab_UL_state_senate`
 
 GROUP BY
 day, senate_tract"
@@ -130,12 +129,11 @@ GROUP BY
 
 tract, day"
 
-#`thieme.dataflow_upper_final_int`  
 senate_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`thieme.dataflow_upper_final_int`
+`thieme.ndt_spatial_state_senate`
 
 GROUP BY 
 
@@ -145,7 +143,7 @@ house_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`thieme.dataflow_lower_test_int_final`
+`thieme.ndt_spatial_state_house `
 
 GROUP BY 
 
