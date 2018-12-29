@@ -21,7 +21,7 @@ To use this pipeline, download the four script files in the repo as well as pipe
 
 Open 1,3, and 4 in R. Run 1 and 2. 
 
-Follow the instructions for running the dataflow pipeline 1.ii.i
+Follow the instructions for running the dataflow pipeline 1.ii
 
 Run 4.
 
