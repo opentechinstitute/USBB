@@ -13,7 +13,7 @@ load("legislative_mlab")
 ##################
 #BigQuery queries#
 ##################
-#`thieme.D_deserts_final_minrtt_state`
+#`oti_usob.D_deserts_final_minrtt_state`
 
 query_agg_ip<-"#standardSQL
 
@@ -22,7 +22,7 @@ APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
 APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`thieme.dataflow_county_final_copy`
+`oti_usob.dataflow_county_final_copy`
 
 GROUP BY
 day, tract"
@@ -33,7 +33,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`thieme.test_UL`
+`oti_usob.test_UL`
 
 GROUP BY
 day, tract"
@@ -46,7 +46,7 @@ APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`thieme.dataflow_lower_test_final`
+`oti_usob.dataflow_lower_test_final`
 
 GROUP BY
 client_lat, client_lon, day, tract"
@@ -57,7 +57,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 tract
 FROM
-`thieme.mixed_house`
+`oti_usob.mixed_house`
 
 GROUP BY
 day, tract"
@@ -71,7 +71,7 @@ APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`thieme.dataflow_upper_test_final`
+`oti_usob.dataflow_upper_test_final`
 
 
 GROUP BY
@@ -83,7 +83,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 senate_tract
 FROM
-`thieme.UL_test_senate_joined`
+`oti_usob.UL_test_senate_joined`
 
 GROUP BY
 day, senate_tract"
@@ -124,7 +124,7 @@ tract_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`thieme.ndt_spatial`
+`oti_usob.ndt_spatial`
 
 GROUP BY 
 
@@ -135,7 +135,7 @@ senate_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`thieme.dataflow_upper_final_int`
+`oti_usob.dataflow_upper_final_int`
 
 GROUP BY 
 
@@ -145,7 +145,7 @@ house_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`thieme.dataflow_lower_test_int_final`
+`oti_usob.dataflow_lower_test_int_final`
 
 GROUP BY 
 
@@ -160,12 +160,12 @@ todo_copies_up <- load_time_chunks(query_agg_up)
 tract_count_count<-query_exec(tract_count_query, project = project, use_legacy_sql=FALSE, max_pages = Inf)
 D<-left_join(todo_copies, tract_count_count, by = c("day", "tract"))
 
-D_477_2017_jun_prov <- load_477_data(query_477_prov, "thieme.477_jun_2017")
-D_477_2016_dec_prov <- load_477_data(query_477_prov, "thieme.477_dec_2016")
-D_477_2016_jun_prov <- load_477_data(query_477_prov, "thieme.477_jun_2016")
-D_477_2015_dec_prov <- load_477_data(query_477_prov, "thieme.477_dec_2015")
-D_477_2015_jun_prov <- load_477_data(query_477_prov, "thieme.477_jun_2015")
-D_477_2014_dec_prov <- load_477_data(query_477_prov, "thieme.477_dec_2014")
+D_477_2017_jun_prov <- load_477_data(query_477_prov, "oti_usob.477_jun_2017")
+D_477_2016_dec_prov <- load_477_data(query_477_prov, "oti_usob.477_dec_2016")
+D_477_2016_jun_prov <- load_477_data(query_477_prov, "oti_usob.477_jun_2016")
+D_477_2015_dec_prov <- load_477_data(query_477_prov, "oti_usob.477_dec_2015")
+D_477_2015_jun_prov <- load_477_data(query_477_prov, "oti_usob.477_jun_2015")
+D_477_2014_dec_prov <- load_477_data(query_477_prov, "oti_usob.477_dec_2014")
 
 D_state_house <- load_time_chunks(query_house)
 D_state_house_up <- load_time_chunks(query_house_up)
