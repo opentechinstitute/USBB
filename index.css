@@ -1,0 +1,201 @@
+body { margin:0; padding:0; }
+
+#map { position:absolute; top:0; bottom:0; width:100%; }
+
+#source_menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 10px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#attribute_menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 70px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#geo_menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 130px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#myForm {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 315;
+    right: 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#cutoff_menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 200px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#muni_menu {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    top: 250px;
+    right: 10px;
+    border-radius: 3px;
+    width: 120px;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+.menu a {
+    font-size: 13px;
+    color: #404040;
+    display: block;
+    margin: 0;
+    padding: 0;
+    padding: 10px;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+.menu a:last-child {
+    border: none;
+}
+
+.menu a:hover {
+    background-color: #f8f8f8;
+    color: #404040;
+}
+
+.menu a.active {
+    background-color: #3887be;
+    color: #ffffff;
+}
+
+.menu a.active:hover {
+    background: #3074a4;
+}
+
+.map-overlay {
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    margin-right: 20px;
+    font-family: Arial, sans-serif;
+    overflow: auto;
+    border-radius: 3px;
+}
+
+.legend {
+    padding: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    line-height: 18px;
+    margin-bottom: 40px;
+    display: inline-block;
+}
+
+.legend div{
+    display:table;
+}
+
+.legend-key {
+    display: inline-block;
+    border-radius: 20%;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+}
+
+.mapboxgl-popup {
+    max-width: 200px;
+}
+
+.mapboxgl-popup-content {
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.marker {
+    background-image: url('library-15.svg');
+    background-size: cover;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.map-overlay_1 {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 10%;
+    top: 0;
+    left: 0;
+    padding: 10px;
+}
+
+.map-overlay_1 .map-overlay-inner {
+    background-color: #fff;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.map-overlay_1 h2 {
+    line-height: 24px;
+    display: block;
+    margin: 0 0 10px;
+}
+
+.map-overlay_1 .legend .bar {
+    height: 10px;
+    width: 100%;
+    background: linear-gradient(to right, #FCA107, #7F3121);
+}
+
+.map-overlay_1 input {
+    background-color: transparent;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    cursor: ew-resize;
+}
+
+select {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    height: 50px;
+    padding: 5px; /* If you add too much padding here, the options will not show in IE */
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
