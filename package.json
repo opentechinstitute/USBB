@@ -1,0 +1,16 @@
+{
+  "name": "SOTI",
+  "version": "0.0.1",
+  "description": "United States of Broadband Website",
+  "main": "index.ts",
+  "repository": "git@github.com:opentechinstitute/SOTI.git",
+  "author": "Ross Schulman <ross@rbs.io>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.3.3333",
+    "webpack": "^4.29.5",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
