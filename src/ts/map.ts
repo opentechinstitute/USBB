@@ -1,8 +1,13 @@
+import { LngLat, LngLatBounds } from "mapbox-gl";
+import { selection } from 'd3-selection';
+
 //map bounds
-var bounds = [
-    [-191.527239, -10], // Southwest coordinates
-    [2.565, 71.388889] // Northeast coordinates
-];
+var bounds = new LngLatBounds(
+    [
+        new LngLat(-191.527239, -10), // Southwest coordinates
+        new LngLat(2.565, 71.388889)  // Northeast coordinates
+    ]);
+
 mapboxgl.accessToken = 'pk.eyJ1IjoibmV3YW1lcmljYSIsImEiOiIyM3ZnYUtrIn0.57fFgg_iM7S1wLH2GQC71g';
 var map = new mapboxgl.Map({
     container: 'map',
@@ -98,58 +103,58 @@ var speed_muni_colors = ["#d07386"];
 var broadband_cutoffs_labels = ["Both above cutoffs", "Download below 10 Mbps", "Upload below 1 Mbps", "Both below cutoffs"]
 var broadband_cutoffs_colors = ['#FCFDBF', '#B63679', "#721F81", "#000004"]
 
-var center_array = [
-    ["Alabama", [32.806671, -86.791130]],
-    ["Alaska", [61.370716, -152.404419]],
-    ["Arizona", [33.729759, -111.431221]],
-    ["Arkansas", [34.969704, -92.373123]],
-    ["California", [36.116203, -119.681564]],
-    ["Colorado", [39.059811, -105.311104]],
-    ["Connecticut", [41.597782, -72.755371]],
-    ["Delaware", [39.318523, -75.507141]],
-    ["District of Columbia", [38.897438, -77.026817]],
-    ["Florida", [27.766279, -81.686783]],
-    ["Georgia", [33.040619, -83.643074]],
-    ["Hawaii", [21.094318, -157.498337]],
-    ["Idaho", [44.240459, -114.478828]],
-    ["Illinois", [40.349457, -88.986137]],
-    ["Indiana", [39.849426, -86.258278]],
-    ["Iowa", [42.011539, -93.210526]],
-    ["Kansas", [38.526600, -96.726486]],
-    ["Kentucky", [37.668140, -84.670067]],
-    ["Louisiana", [31.169546, -91.867805]],
-    ["Maine", [44.693947, -69.381927]],
-    ["Maryland", [39.063946, -76.802101]],
-    ["Massachusetts", [42.230171, -71.530106]],
-    ["Michigan", [43.326618, -84.536095]],
-    ["Minnesota", [45.694454, -93.900192]],
-    ["Mississippi", [32.741646, -89.678696]],
-    ["Missouri", [38.456085, -92.288368]],
-    ["Montana", [46.921925, -110.454353]],
-    ["Nebraska", [41.125370, -98.268082]],
-    ["Nevada", [38.313515, -117.055374]],
-    ["New Hampshire", [43.452492, -71.563896]],
-    ["New Jersey", [40.298904, -74.521011]],
-    ["New Mexico", [34.840515, -106.248482]],
-    ["New York", [42.165726, -74.948051]],
-    ["North Carolina", [35.630066, -79.806419]],
-    ["North Dakota", [47.528912, -99.784012]],
-    ["Ohio", [40.388783, -82.764915]],
-    ["Oklahoma", [35.565342, -96.928917]],
-    ["Oregon", [44.572021, -122.070938]],
-    ["Pennsylvania", [40.590752, -77.209755]],
-    ["Rhode Island", [41.680893, -71.511780]],
-    ["South Carolina", [33.856892, -80.945007]],
-    ["South Dakota", [44.299782, -99.438828]],
-    ["Tennessee", [35.747845, -86.692345]],
-    ["Texas", [31.054487, -97.563461]],
-    ["Utah", [40.150032, -111.862434]],
-    ["Vermont", [44.045876, -72.710686]],
-    ["Virginia", [37.769337, -78.169968]],
-    ["Washington", [47.400902, -121.490494]],
-    ["West Virginia", [38.491226, -80.954453]],
-    ["Wisconsin", [44.268543, -89.616508]],
-    ["Wyoming", [42.755966, -107.302490]]
+var center_array:[[string, LngLat]] = [
+    ["Alabama", new LngLat(32.806671, -86.791130)],
+    ["Alaska", new LngLat(61.370716, -152.404419)],
+    ["Arizona", new LngLat(33.729759, -111.431221)],
+    ["Arkansas", new LngLat(34.969704, -92.373123)],
+    ["California", new LngLat(36.116203, -119.681564)],
+    ["Colorado", new LngLat(39.059811, -105.311104)],
+    ["Connecticut", new LngLat(41.597782, -72.755371)],
+    ["Delaware", new LngLat(39.318523, -75.507141)],
+    ["District of Columbia", new LngLat(38.897438, -77.026817)],
+    ["Florida", new LngLat(27.766279, -81.686783)],
+    ["Georgia", new LngLat(33.040619, -83.643074)],
+    ["Hawaii", new LngLat(21.094318, -157.498337)],
+    ["Idaho", new LngLat(44.240459, -114.478828)],
+    ["Illinois", new LngLat(40.349457, -88.986137)],
+    ["Indiana", new LngLat(39.849426, -86.258278)],
+    ["Iowa", new LngLat(42.011539, -93.210526)],
+    ["Kansas", new LngLat(38.526600, -96.726486)],
+    ["Kentucky", new LngLat(37.668140, -84.670067)],
+    ["Louisiana", new LngLat(31.169546, -91.867805)],
+    ["Maine", new LngLat(44.693947, -69.381927)],
+    ["Maryland", new LngLat(39.063946, -76.802101)],
+    ["Massachusetts", new LngLat(42.230171, -71.530106)],
+    ["Michigan", new LngLat(43.326618, -84.536095)],
+    ["Minnesota", new LngLat(45.694454, -93.900192)],
+    ["Mississippi", new LngLat(32.741646, -89.678696)],
+    ["Missouri", new LngLat(38.456085, -92.288368)],
+    ["Montana", new LngLat(46.921925, -110.454353)],
+    ["Nebraska", new LngLat(41.125370, -98.268082)],
+    ["Nevada", new LngLat(38.313515, -117.055374)],
+    ["New Hampshire", new LngLat(43.452492, -71.563896)],
+    ["New Jersey", new LngLat(40.298904, -74.521011)],
+    ["New Mexico", new LngLat(34.840515, -106.248482)],
+    ["New York", new LngLat(42.165726, -74.948051)],
+    ["North Carolina", new LngLat(35.630066, -79.806419)],
+    ["North Dakota", new LngLat(47.528912, -99.784012)],
+    ["Ohio", new LngLat(40.388783, -82.764915)],
+    ["Oklahoma", new LngLat(35.565342, -96.928917)],
+    ["Oregon", new LngLat(44.572021, -122.070938)],
+    ["Pennsylvania", new LngLat(40.590752, -77.209755)],
+    ["Rhode Island", new LngLat(41.680893, -71.511780)],
+    ["South Carolina", new LngLat(33.856892, -80.945007)],
+    ["South Dakota", new LngLat(44.299782, -99.438828)],
+    ["Tennessee", new LngLat(35.747845, -86.692345)],
+    ["Texas", new LngLat(31.054487, -97.563461)],
+    ["Utah", new LngLat(40.150032, -111.862434)],
+    ["Vermont", new LngLat(44.045876, -72.710686)],
+    ["Virginia", new LngLat(37.769337, -78.169968)],
+    ["Washington", new LngLat(47.400902, -121.490494)],
+    ["West Virginia", new LngLat(38.491226, -80.954453)],
+    ["Wisconsin", new LngLat(44.268543, -89.616508)],
+    ["Wyoming", new LngLat(42.755966, -107.302490)]
 ]
 
 var states = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
@@ -163,22 +168,26 @@ for (var i = 0; i < states.length; i++) {
     var el = document.createElement("option");
     el.textContent = opt;
     el.value = opt;
-    select.appendChild(el);
+    if (select != null) {
+        select.appendChild(el);
+    }
 }
 
 d3.select("#selectNumber").on("change", function() {
-    var sel = document.getElementById('selectNumber');
-    var active_state = sel.options[sel.selectedIndex].value;
-    var state_ind = states.indexOf(active_state)
-    var fly_to_loc = center_array[state_ind][1]
-    map.flyTo({
-        center: [
-            fly_to_loc[1],
-            fly_to_loc[0]
-        ],
-        zoom: 6,
-        speed: .5
-    });
+    var sel = document.getElementById('selectNumber') as HTMLSelectElement;
+    if (sel != null) {
+        var active_state = sel.options[sel.selectedIndex].value;
+        var state_ind = states.indexOf(active_state)
+        var fly_to_loc = center_array[state_ind][1]
+        map.flyTo({
+            center: [
+                fly_to_loc[1],
+                fly_to_loc[0]
+            ],
+            zoom: 6,
+            speed: .5
+        });
+    }
 
 });
 
@@ -202,18 +211,62 @@ makeToggle(geo_ids, geo_names, active_geo, "geo_menu", false)
 makeToggle(attribute_ids, attribute_names, active_attribute, "attribute_menu", true)
 createLegend(eval(legend_dict[active_source + "_" + active_attribute] + "_" + "labels"), eval(legend_dict[active_source + "_" + active_attribute] + "_" + "colors"), starting_map);
 
+interface County {
+    county: string[];
+    speed_mlab: number[];
+    speed_mlab_up: number[];
+    speed_477: number[];
+    speed_477_up: number[];
+    speed_diff: number[];
+    speed_diff_up: number[];
+    speed_diff_perc: number[];
+    speed_diff_perc_up: number[];
+    counts: number[];
+    date_range: string[];
+    nine_speed: number[];
+    nine_up_speed: number[];
+    broadband_cutoffs: string[];
+}
+
+export interface House {
+    house_num: string[];
+    house: string[];
+    speed_mlab_up: number[];
+    speed_477: number[];
+    speed_477_up: number[];
+    speed_diff: number[];
+    speed_diff_up: number[];
+    speed_diff_perc: number[];
+    speed_diff_perc_up: number[];
+    broadband_cutoffs: string[];
+    date_range: string[];
+    speed_mlab: number[];
+    counts: number[];
+}
+
+interface downloadData {
+    county: County[];
+    house_: House[];
+}
+
+interface globalData {
+    county: County[];
+    state_house: House[];
+    state_senate: House[];
+}
+
 //This section performs the initial load of data so that a map appears quicklymapbox_leg_county_counts_new_agg_up_full.json
-$.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.json', function(data) {
-    var lower_json = [];
-    var upper_json = [];
+$.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.json', function(data: downloadData) {
+    var lower_json: House[] = [];
+    var upper_json: House[] = [];
     for (var i = 0; i < data["house_"].length; i++) {
-        if (data["house_"][i]["house"] == "lower") {
+        if (data["house_"][i]["house"] == ["lower"]) {
             lower_json.push(data["house_"][i]);
-        } else if (data["house_"][i]["house"] == "upper") {
+        } else if (data["house_"][i]["house"] == ["upper"]) {
             upper_json.push(data["house_"][i]);
         }
     }
-    global_data = { "county": data["county"], "state_house": lower_json, "state_senate": upper_json }
+    let global_data: globalData = { "county": data["county"], "state_house": lower_json, "state_senate": upper_json }
 
     //data is the JSON string
     map.on('load', function() {
@@ -234,12 +287,12 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
             url: "mapbox://newamerica.10za116x"
         });
 
-        var workerSends = [];
+        var workerSends: number[] = [];
         // Possible future enhancement: move the filtering in the below three lines into Workers as well
         for (var j = 0; j < date_ids.length; j++) {
-            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
-            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
-            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
+            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
+            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
+            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
             var data_filtered = { "county": filtered_county, "state_house": filtered_house, "state_senate": filtered_senate }
             var colorArray = [];
             workerSends[j] = 0;
