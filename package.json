@@ -18,6 +18,7 @@
     "tsc": "tsc"
   },
   "dependencies": {
+    "@types/d3": "^5.7.1",
     "@types/mapbox-gl": "^0.51.4"
   }
 }
