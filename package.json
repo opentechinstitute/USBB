@@ -12,5 +12,9 @@
     "typescript": "^3.3.3333",
     "webpack": "^4.29.5",
     "webpack-dev-server": "^3.2.1"
+  },
+  "scripts": {
+    "start": "webpack-dev-server",
+    "tsc": "tsc"
   }
 }
