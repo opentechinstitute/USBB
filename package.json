@@ -16,5 +16,8 @@
   "scripts": {
     "start": "webpack-dev-server",
     "tsc": "tsc"
+  },
+  "dependencies": {
+    "@types/mapbox-gl": "^0.51.4"
   }
 }

@@ -2,6 +2,18 @@
 # yarn lockfile v1
 
 
+"@types/geojson@*":
+  version "7946.0.6"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.6.tgz#416f388a06b227784a2d91a88a53f14de05cd54b"
+  integrity sha512-f6qai3iR62QuMPPdgyH+LyiXTL2n9Rf62UniJjV7KHrbiwzLTZUKsdq0mFSTxAHbO7JvwxwC4tH0m1UnweuLrA==
+
+"@types/mapbox-gl@^0.51.4":
+  version "0.51.4"
+  resolved "https://registry.yarnpkg.com/@types/mapbox-gl/-/mapbox-gl-0.51.4.tgz#74ae72af6ea8fcead9a85b44d408e8bc97f91bb5"
+  integrity sha512-+MqOB1O81rBKPE0mobvgfMs7FugtNnZY42y4sOHj/ljyoIiidyAQ+N27Jd5eTZ8arLAMzbxmDJ0s5oukAgZroQ==
+  dependencies:
+    "@types/geojson" "*"
+
 "@webassemblyjs/ast@1.8.3":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.8.3.tgz#63a741bd715a6b6783f2ea5c6ab707516aa215eb"
