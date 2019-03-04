@@ -1,5 +1,9 @@
+import { date_ids, date_names, map, geo_ids, source_ids, map_div, colorArrayTime,
+     attribute_ids, standalone_admissible_toggles, legend_dict, legend_grouping } from './map';
+import * as mapboxgl from 'mapbox-gl';
+
 //simple helped functions for calculating maximums
-function getMax(arr, prop) {
+export function getMax(arr, prop) {
     var max;
     for (var i = 0; i < arr.length; i++) {
         if (!max || parseInt(arr[i][prop]) > parseInt(max[prop]))
@@ -9,8 +13,8 @@ function getMax(arr, prop) {
 };
 //creates the color legend html object and the stylization for the maps. it relies on colors specified in the variable definition code, not on the colors that are specified in the color scheme functions above.
 //that means that when the scheme needs to change, it needs to be updated in both places
-function createLegend(labels, colors, div_legend) {
-    for (i = 0; i < labels.length; i++) {
+export function createLegend(labels, colors, div_legend) {
+    for (var i = 0; i < labels.length; i++) {
         var label = labels[i];
         var color = colors[i];
         var item = document.createElement('div');
@@ -25,7 +29,7 @@ function createLegend(labels, colors, div_legend) {
     }
 }
 //creates the html object for the date slider and calls the function that gives that slider functionality. Could be updated to create sliders for other variables fairly simply.
-function createSlider(location, slide_val) {
+export function createSlider(location, slide_val) {
     var input_div = document.createElement('div');
     var h3 = document.createElement("h3");
     var label = document.createElement('label');
@@ -35,9 +39,9 @@ function createSlider(location, slide_val) {
     label.id = "time_chunks";
     input.id = "slider";
     input.type = "range";
-    input.min = 0;
-    input.max = date_ids.length - 1;
-    input.step = 1;
+    input.min = "0";
+    input.max = (date_ids.length - 1).toString();
+    input.step = "1";
     input.value = slide_val;
     input_div.appendChild(h3);
     input_div.appendChild(label);
@@ -48,17 +52,17 @@ function createSlider(location, slide_val) {
 }
 
 //adds functionality to an html slider. never called outside of "createSlider"
-function createSliderAction() {
+export function createSliderAction() {
     document.getElementById('slider').addEventListener('input', function(time_chunk) {
         var cutoffs_obj_active = $("#broadband_cutoffs")[0].className; //when there are more standalones, change this to check the div for any active standalones
-        var slid_ind = document.getElementById('slider').value;
-        var geo = $("#geo_menu")[0].value;
+        var slid_ind = (document.getElementById('slider') as HTMLInputElement).value;
+        var geo = ($("#geo_menu")[0] as HTMLSelectElement).value;
 
         if (cutoffs_obj_active == "active") { //when there are more standalones, change this to check the div for any active standalones
             var keep_map = date_ids[slid_ind] + "_" + geo + "_" + "broadband_cutoffs";
         } else {
-            var attribute = $("#attribute_menu")[0].value;
-            var source = $("#source_menu")[0].value;
+            var attribute = ($("#attribute_menu")[0] as HTMLSelectElement).value;
+            var source = ($("#source_menu")[0] as HTMLSelectElement).value;
             var keep_map = date_ids[slid_ind] + "_" + geo + "_" + source + "_" + attribute;
         }
 
@@ -69,7 +73,7 @@ function createSliderAction() {
 }
 
 //this function makes invisible data layers that aren't provided as input. That's the trick of how this app styles the map.
-function turnOffOtherMaps(current_map) {
+export function turnOffOtherMaps(current_map) {
 
     //this layer stays on top of other layers so don't remove the other maps
     if (current_map.endsWith("speed_muni")) {
@@ -104,7 +108,7 @@ function turnOffOtherMaps(current_map) {
 }
 
 //creates the html toggle bars that appear on the right of the map
-function makeToggle(toggleIDs, toggleableLayerNames, active_level, id_name, make_legend) {
+export function makeToggle(toggleIDs, toggleableLayerNames, active_level, id_name, make_legend) {
     var select = document.getElementById(id_name);
     for (var i = 0; i < toggleableLayerNames.length; i++) {
         var opt = toggleableLayerNames[i];
@@ -118,14 +122,14 @@ function makeToggle(toggleIDs, toggleableLayerNames, active_level, id_name, make
 
 
 //similar to the two functions used to create the slider, the html object and the mechanics of the object are created by two separate functions. This creates the mechanics
-function createToggleMechanics(this_Toggle, make_legend) {
+export function createToggleMechanics(this_Toggle, make_legend) {
     var cutoffs_obj_active = $("#broadband_cutoffs")[0].className;
     var clickedLayer = this_Toggle.value;
-    date_ind = document.getElementById('slider').value
+    var date_ind = (document.getElementById('slider') as HTMLInputElement).value;
     var date = date_ids[date_ind];
-    var geo = $("#geo_menu")[0].value;
-    var attribute = $("#attribute_menu")[0].value;
-    var source = $("#source_menu")[0].value;
+    var geo = ($("#geo_menu")[0] as HTMLSelectElement).value;
+    var attribute = ($("#attribute_menu")[0] as HTMLSelectElement).value;
+    var source = ($("#source_menu")[0] as HTMLSelectElement).value;
 
     if (cutoffs_obj_active == "active") { //when there are more standalones, change this to check the div for any active standalones
         var keep_map = date + "_" + geo + "_" + "broadband_cutoffs";
@@ -164,7 +168,7 @@ function createToggleMechanics(this_Toggle, make_legend) {
         legend_div.id = legend_grouping[clickedLayer];
         $(".map-overlay_1").append(legend_div);
         var curr_legend = $("." + clickedLayer);
-        var slid_ind = document.getElementById('slider').value;
+        var slid_ind = (document.getElementById('slider') as HTMLInputElement).value;
         var to_make_inactive_div = $('div.map-overlay')
             .empty();
         var to_make_inactive_div = $('div.map-overlay-inner')
@@ -181,7 +185,7 @@ function createToggleMechanics(this_Toggle, make_legend) {
 
 };
 
-function makeStandalone(_id, text, menu_name, action, make_legend) {
+export function makeStandalone(_id, text, menu_name, action, make_legend) {
     var id = _id
 
     var link = document.createElement('a');
@@ -193,7 +197,7 @@ function makeStandalone(_id, text, menu_name, action, make_legend) {
     if (action == true) {
         link.onclick = function() { createStandaloneAction(this, _id, make_legend) };
     } else {
-        link.onclick = function(e) {
+        link.onclick = (e) => {
 
             var clickedLayer = this.id;
             var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
@@ -213,11 +217,11 @@ function makeStandalone(_id, text, menu_name, action, make_legend) {
 
 }
 
-function createStandaloneAction(this_Standalone, standalone_id, make_legend) {
+export function createStandaloneAction(this_Standalone, standalone_id, make_legend) {
     var clickedLayer = this_Standalone.id
-    date_ind = document.getElementById('slider').value
+    var date_ind = (document.getElementById('slider') as HTMLInputElement).value;
     var date = date_ids[date_ind];
-    var geo = $("#geo_menu")[0].value;
+    var geo = ($("#geo_menu")[0] as HTMLSelectElement).value;
     var keep_map = date + "_" + geo + "_" + standalone_id;
     var visibility = map.getLayoutProperty(keep_map + "_id", 'visibility');
 
@@ -233,7 +237,7 @@ function createStandaloneAction(this_Standalone, standalone_id, make_legend) {
         legend_div.id = legend_grouping[clickedLayer];
         $(".map-overlay_1").append(legend_div);
         var curr_legend = $("." + clickedLayer);
-        var slid_ind = document.getElementById('slider').value;
+        var slid_ind = (document.getElementById('slider') as HTMLInputElement).value;
         var to_make_inactive_div = $('div.map-overlay')
             .empty();
         var to_make_inactive_div = $('div.map-overlay-inner')
@@ -259,7 +263,7 @@ function createStandaloneAction(this_Standalone, standalone_id, make_legend) {
     this_Standalone.className = 'active';
 }
 
-function loadStandalone(standalone_id, source_ind, attribute_ind) {
+export function loadStandalone(standalone_id, source_ind, attribute_ind) {
     for (var k = 0; k < date_ids.length; k++) {
         for (var i = 0; i < geo_ids.length; i++) {
             if (geo_ids[i] == "state_house") {
@@ -275,7 +279,6 @@ function loadStandalone(standalone_id, source_ind, attribute_ind) {
                         "type": "fill",
                         "source": "legislative_lower_state",
                         "source-layer": "full_speed_data_census_leg_lo-1ltr3a",
-                        "visibility": "none",
                         "paint": {
                             "fill-color": colorArrayTime[k][i][source_ind][attribute_ind],
                             "fill-outline-color": "#cecece"
@@ -294,7 +297,6 @@ function loadStandalone(standalone_id, source_ind, attribute_ind) {
                         "type": "fill",
                         "source": "legislative_upper_state",
                         "source-layer": "full_speed_data_census_leg_up-39wwkk",
-                        "visibility": "none",
                         "paint": {
                             "fill-color": colorArrayTime[k][i][source_ind][attribute_ind],
                             "fill-outline-color": "#cecece"
@@ -313,7 +315,6 @@ function loadStandalone(standalone_id, source_ind, attribute_ind) {
                         "type": "fill",
                         "source": "county",
                         "source-layer": "full_speed_data_census_base_use",
-                        "visibility": "none",
                         "paint": {
                             "fill-color": colorArrayTime[k][i][source_ind][attribute_ind],
                             "fill-outline-color": "#cecece"
@@ -325,7 +326,7 @@ function loadStandalone(standalone_id, source_ind, attribute_ind) {
     }
 }
 //This function is used to split up layer loading so that some amount of map shows up quickly while the others load
-function loadLayers(time_lower, time_upper, geo_lower, geo_upper, source_lower, source_upper, attribute_lower, attribute_upper) {
+export function loadLayers(time_lower, time_upper, geo_lower, geo_upper, source_lower, source_upper, attribute_lower, attribute_upper) {
     for (var k = time_lower; k < time_upper; k++) {
         for (var i = geo_lower; i < geo_upper; i++) {
             for (var j = source_lower; j < source_upper; j++) {
@@ -343,7 +344,6 @@ function loadLayers(time_lower, time_upper, geo_lower, geo_upper, source_lower, 
                                 "type": "fill",
                                 "source": "legislative_lower_state",
                                 "source-layer": "full_speed_data_census_leg_lo-1ltr3a",
-                                "visibility": "none",
                                 "paint": {
                                     "fill-color": colorArrayTime[k][i][j][l],
                                     "fill-outline-color": "#cecece"
@@ -362,7 +362,6 @@ function loadLayers(time_lower, time_upper, geo_lower, geo_upper, source_lower, 
                                 "type": "fill",
                                 "source": "legislative_upper_state",
                                 "source-layer": "full_speed_data_census_leg_up-39wwkk",
-                                "visibility": "none",
                                 "paint": {
                                     "fill-color": colorArrayTime[k][i][j][l],
                                     "fill-outline-color": "#cecece"
@@ -381,7 +380,6 @@ function loadLayers(time_lower, time_upper, geo_lower, geo_upper, source_lower, 
                                 "type": "fill",
                                 "source": "county",
                                 "source-layer": "full_speed_data_census_base_use",
-                                "visibility": "none",
                                 "paint": {
                                     "fill-color": colorArrayTime[k][i][j][l],
                                     "fill-outline-color": "#cecece"

@@ -1,3 +1,5 @@
+import { House, County } from './index';
+
 this.onmessage = function(e) {
     let colors = createColorvector(e.data.filtered, e.data.names);
     this.postMessage({
@@ -8,7 +10,7 @@ this.onmessage = function(e) {
 };
 
 //these three functions define the color schemes for the maps.
-function getColor(cat) {
+function getColor(cat: number) {
     if ((100 <= cat) && (cat < 1000)) {
         return '#034e7b';
     } else if ((50 <= cat) && (cat < 100)) {
@@ -28,7 +30,7 @@ function getColor(cat) {
     }
 };
 
-function getColorUp(cat) {
+function getColorUp(cat: number) {
     if (5 <= cat) {
         return '#006d2c';
     } else if ((3.1 <= cat) && (cat < 5)) {
@@ -46,7 +48,7 @@ function getColorUp(cat) {
     }
 };
 
-function getColorcomp(cat) {
+function getColorcomp(cat: number) {
     if (25 <= cat) {
         return '#01665e';
     } else if ((15 <= cat) && (cat < 25)) {
@@ -70,7 +72,7 @@ function getColorcomp(cat) {
     }
 };
 
-function getColorcompperc(cat) {
+function getColorcompperc(cat: number) {
     if (5 <= cat) {
         return '#01665e';
     } else if ((2.5 <= cat) && (cat < 5)) {
@@ -90,7 +92,7 @@ function getColorcompperc(cat) {
     }
 };
 
-function getColorCounts(cat) {
+function getColorCounts(cat: number) {
     if (100000 <= cat) {
         return '#006d2c';
     } else if ((50000 <= cat) && (cat < 100000)) {
@@ -108,7 +110,7 @@ function getColorCounts(cat) {
     }
 };
 
-function getColorcutoff(cat) {
+function getColorcutoff(cat: string) {
     if (cat == "Both below cutoffs") {
         return '#000004';
     } else if (cat == "Both above cutoffs") {
@@ -124,7 +126,7 @@ function getColorcutoff(cat) {
 
 //creates the data-driven colors of the map. It's pretty hard-coded so whenever new variable types to display are added this needs to be updated. It doesn't though, need to be updated when filters
 //like date or region are added.
-function createColorvector(data, data_name) {
+function createColorvector(data: any, data_name: string) {
     var expression_speed_mlab = ["match", ["get", data_name]];
     var expression_speed_mlab_up = ["match", ["get", data_name]];
     var expression_speed_477 = ["match", ["get", data_name]];
@@ -132,7 +134,7 @@ function createColorvector(data, data_name) {
     var expression_speed_diff = ["match", ["get", data_name]];
     var expression_speed_diff_up = ["match", ["get", data_name]];
     var expression_speed_cutoffs = ["match", ["get", data_name]];
-    data.forEach(function(row) {
+    data.forEach(function(row: House[] | County[] ): void {
         if (row[data_name] === undefined) {
             //do nothing
         } else {

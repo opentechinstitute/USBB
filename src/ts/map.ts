@@ -1,5 +1,10 @@
+import * as mapboxgl from 'mapbox-gl';
 import { LngLat, LngLatBounds } from "mapbox-gl";
-import { selection } from 'd3-selection';
+import * as d3 from 'd3';
+import * as geojson from 'geojson';
+import $ from 'jquery';
+import { globalData, downloadData, County, House, filteredData } from './index';
+import { createSlider, makeToggle, createLegend, loadLayers, makeStandalone, loadStandalone, turnOffOtherMaps } from './minimal';
 
 //map bounds
 var bounds = new LngLatBounds(
@@ -8,8 +13,8 @@ var bounds = new LngLatBounds(
         new LngLat(2.565, 71.388889)  // Northeast coordinates
     ]);
 
-mapboxgl.accessToken = 'pk.eyJ1IjoibmV3YW1lcmljYSIsImEiOiIyM3ZnYUtrIn0.57fFgg_iM7S1wLH2GQC71g';
-var map = new mapboxgl.Map({
+(mapboxgl as any).accessToken = 'pk.eyJ1IjoibmV3YW1lcmljYSIsImEiOiIyM3ZnYUtrIn0.57fFgg_iM7S1wLH2GQC71g';
+export var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/newamerica/cjpn4e4df2gak2rp7nef3am21',
     center: [-99.9, 41.5],
@@ -71,20 +76,20 @@ var geojson_markers = {
 };
 
 var data_names = ["county", "house_num", "house_num"]; //this variable is needed because the name of the variable inside the array differs between the county and legis shapes
-var source_ids = ["MLab", "FCC", "Diff"]
-var geo_ids = ["county", "state_house", "state_senate"];
-var attribute_ids = ["DL", "UL"];
-var date_ids = ["dec_14", "jun_15", "dec_15", "jun_16", "dec_16", "jun_17"];
+export var source_ids = ["MLab", "FCC", "Diff"]
+export var geo_ids = ["county", "state_house", "state_senate"];
+export var attribute_ids = ["DL", "UL"];
+export var date_ids = ["dec_14", "jun_15", "dec_15", "jun_16", "dec_16", "jun_17"];
 
 var geo_names = ["County", "State House", "State Senate"];
 var source_names = ["M-Lab", "FCC", "Difference"]
-var date_names = ["Dec 2014", "Jun 2015", "Dec 2015", "Jun 2016", "Dec 2016", "Jun 2017"];
+export var date_names = ["Dec 2014", "Jun 2015", "Dec 2015", "Jun 2016", "Dec 2016", "Jun 2017"];
 var attribute_names = ["Download", "Upload"]
 
-var legend_grouping = { "MLab_DL": "legend_mbps", "MLab_UL": "legend_mbps", "FCC_DL": "legend_mbps", "FCC_UL": "legend_mbps", "broadband_cutoffs": "legend_mbps" }; //need to add in others
+export var legend_grouping = { "MLab_DL": "legend_mbps", "MLab_UL": "legend_mbps", "FCC_DL": "legend_mbps", "FCC_UL": "legend_mbps", "broadband_cutoffs": "legend_mbps" }; //need to add in others
 
-var legend_dict = { "MLab_DL": "DL", "MLab_UL": "UL", "FCC_DL": "DL", "FCC_UL": "UL", "Diff_DL": "Diff_DL", "Diff_UL": "Diff_UL", "broadband_cutoffs": "broadband_cutoffs" };
-var standalone_admissible_toggles = { "broadband_cutoffs": ["county", "state_senate", "state_house"] } //this is a nice way to enable and disable toggles for standalones
+export var legend_dict = { "MLab_DL": "DL", "MLab_UL": "UL", "FCC_DL": "DL", "FCC_UL": "UL", "Diff_DL": "Diff_DL", "Diff_UL": "Diff_UL", "broadband_cutoffs": "broadband_cutoffs" };
+export var standalone_admissible_toggles = { "broadband_cutoffs": ["county", "state_senate", "state_house"] } //this is a nice way to enable and disable toggles for standalones
 
 var DL_labels = ["Greater than 100 Mbps", "100 to 50 ", "25 to 50", "10 to 25", "4 to 10", "200 Kbps to 4 Mbps", "Less than 200 Kbps"];
 var DL_colors = ['#034e7b', '#0570b0', '#3690c0', '#74a9cf', '#a6bddb', '#d0d1e6', '#ece7f2'];
@@ -103,58 +108,58 @@ var speed_muni_colors = ["#d07386"];
 var broadband_cutoffs_labels = ["Both above cutoffs", "Download below 10 Mbps", "Upload below 1 Mbps", "Both below cutoffs"]
 var broadband_cutoffs_colors = ['#FCFDBF', '#B63679', "#721F81", "#000004"]
 
-var center_array:[[string, LngLat]] = [
-    ["Alabama", new LngLat(32.806671, -86.791130)],
-    ["Alaska", new LngLat(61.370716, -152.404419)],
-    ["Arizona", new LngLat(33.729759, -111.431221)],
-    ["Arkansas", new LngLat(34.969704, -92.373123)],
-    ["California", new LngLat(36.116203, -119.681564)],
-    ["Colorado", new LngLat(39.059811, -105.311104)],
-    ["Connecticut", new LngLat(41.597782, -72.755371)],
-    ["Delaware", new LngLat(39.318523, -75.507141)],
-    ["District of Columbia", new LngLat(38.897438, -77.026817)],
-    ["Florida", new LngLat(27.766279, -81.686783)],
-    ["Georgia", new LngLat(33.040619, -83.643074)],
-    ["Hawaii", new LngLat(21.094318, -157.498337)],
-    ["Idaho", new LngLat(44.240459, -114.478828)],
-    ["Illinois", new LngLat(40.349457, -88.986137)],
-    ["Indiana", new LngLat(39.849426, -86.258278)],
-    ["Iowa", new LngLat(42.011539, -93.210526)],
-    ["Kansas", new LngLat(38.526600, -96.726486)],
-    ["Kentucky", new LngLat(37.668140, -84.670067)],
-    ["Louisiana", new LngLat(31.169546, -91.867805)],
-    ["Maine", new LngLat(44.693947, -69.381927)],
-    ["Maryland", new LngLat(39.063946, -76.802101)],
-    ["Massachusetts", new LngLat(42.230171, -71.530106)],
-    ["Michigan", new LngLat(43.326618, -84.536095)],
-    ["Minnesota", new LngLat(45.694454, -93.900192)],
-    ["Mississippi", new LngLat(32.741646, -89.678696)],
-    ["Missouri", new LngLat(38.456085, -92.288368)],
-    ["Montana", new LngLat(46.921925, -110.454353)],
-    ["Nebraska", new LngLat(41.125370, -98.268082)],
-    ["Nevada", new LngLat(38.313515, -117.055374)],
-    ["New Hampshire", new LngLat(43.452492, -71.563896)],
-    ["New Jersey", new LngLat(40.298904, -74.521011)],
-    ["New Mexico", new LngLat(34.840515, -106.248482)],
-    ["New York", new LngLat(42.165726, -74.948051)],
-    ["North Carolina", new LngLat(35.630066, -79.806419)],
-    ["North Dakota", new LngLat(47.528912, -99.784012)],
-    ["Ohio", new LngLat(40.388783, -82.764915)],
-    ["Oklahoma", new LngLat(35.565342, -96.928917)],
-    ["Oregon", new LngLat(44.572021, -122.070938)],
-    ["Pennsylvania", new LngLat(40.590752, -77.209755)],
-    ["Rhode Island", new LngLat(41.680893, -71.511780)],
-    ["South Carolina", new LngLat(33.856892, -80.945007)],
-    ["South Dakota", new LngLat(44.299782, -99.438828)],
-    ["Tennessee", new LngLat(35.747845, -86.692345)],
-    ["Texas", new LngLat(31.054487, -97.563461)],
-    ["Utah", new LngLat(40.150032, -111.862434)],
-    ["Vermont", new LngLat(44.045876, -72.710686)],
-    ["Virginia", new LngLat(37.769337, -78.169968)],
-    ["Washington", new LngLat(47.400902, -121.490494)],
-    ["West Virginia", new LngLat(38.491226, -80.954453)],
-    ["Wisconsin", new LngLat(44.268543, -89.616508)],
-    ["Wyoming", new LngLat(42.755966, -107.302490)]
+var center_array:[string, LngLat][] = [
+        ["Alabama", new LngLat(-86.791130, 32.806671)],
+        ["Alaska", new LngLat(-152.404419, 61.370716)],
+        ["Arizona", new LngLat(-111.431221, 33.729759)],
+        ["Arkansas", new LngLat(-92.373123, 34.969704)],
+        ["California", new LngLat(-119.681564, 36.116203)],
+        ["Colorado", new LngLat(-105.311104, 39.059811)],
+        ["Connecticut", new LngLat(-72.755371, 41.597782)],
+        ["Delaware", new LngLat(-75.507141, 39.318523)],
+        ["District of Columbia", new LngLat(-77.026817, 38.897438)],
+        ["Florida", new LngLat(-81.686783, 27.766279)],
+        ["Georgia", new LngLat(-83.643074, 33.040619)],
+        ["Hawaii", new LngLat(-157.498337, 21.094318)],
+        ["Idaho", new LngLat(-114.478828, 44.240459)],
+        ["Illinois", new LngLat(-88.986137, 40.349457)],
+        ["Indiana", new LngLat(-86.258278, 39.849426)],
+        ["Iowa", new LngLat(-93.210526, 42.011539)],
+        ["Kansas", new LngLat(-96.726486, 38.526600)],
+        ["Kentucky", new LngLat(-84.670067, 37.668140)],
+        ["Louisiana", new LngLat(-91.867805, 31.169546)],
+        ["Maine", new LngLat(-69.381927, 44.693947)],
+        ["Maryland", new LngLat(-76.802101, 39.063946)],
+        ["Massachusetts", new LngLat(-71.530106, 42.230171)],
+        ["Michigan", new LngLat(-84.536095, 43.326618)],
+        ["Minnesota", new LngLat(-93.900192, 45.694454)],
+        ["Mississippi", new LngLat(-89.678696, 32.741646)],
+        ["Missouri", new LngLat(-92.288368, 38.456085)],
+        ["Montana", new LngLat(-110.454353, 46.921925)],
+        ["Nebraska", new LngLat(-98.268082, 41.125370)],
+        ["Nevada", new LngLat(-117.055374, 38.313515)],
+        ["New Hampshire", new LngLat(-71.563896, 43.452492)],
+        ["New Jersey", new LngLat(-74.521011, 40.298904)],
+        ["New Mexico", new LngLat(-106.248482, 34.840515)],
+        ["New York", new LngLat(-74.948051, 42.165726)],
+        ["North Carolina", new LngLat(-79.806419, 35.630066)],
+        ["North Dakota", new LngLat(-99.784012, 47.528912)],
+        ["Ohio", new LngLat(-82.764915, 40.388783)],
+        ["Oklahoma", new LngLat(-96.928917, 35.565342)],
+        ["Oregon", new LngLat(-122.070938, 44.572021)],
+        ["Pennsylvania", new LngLat(-77.209755, 40.590752)],
+        ["Rhode Island", new LngLat(-71.511780, 41.680893)],
+        ["South Carolina", new LngLat(-80.945007, 33.856892)],
+        ["South Dakota", new LngLat(-99.438828, 44.299782)],
+        ["Tennessee", new LngLat(-86.692345, 35.747845)],
+        ["Texas", new LngLat(-97.563461, 31.054487)],
+        ["Utah", new LngLat(-111.862434, 40.150032)],
+        ["Vermont", new LngLat(-72.710686, 44.045876)],
+        ["Virginia", new LngLat(-78.169968, 37.769337)],
+        ["Washington", new LngLat(-121.490494, 47.400902)],
+        ["West Virginia", new LngLat(-80.954453, 38.491226)],
+        ["Wisconsin", new LngLat(-89.616508, 44.268543)],
+        ["Wyoming", new LngLat(-107.302490, 42.755966)]
 ]
 
 var states = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
@@ -180,10 +185,7 @@ d3.select("#selectNumber").on("change", function() {
         var state_ind = states.indexOf(active_state)
         var fly_to_loc = center_array[state_ind][1]
         map.flyTo({
-            center: [
-                fly_to_loc[1],
-                fly_to_loc[0]
-            ],
+            center: fly_to_loc,
             zoom: 6,
             speed: .5
         });
@@ -191,7 +193,7 @@ d3.select("#selectNumber").on("change", function() {
 
 });
 
-var colorArrayTime = [];
+export var colorArrayTime = [];
 var global_data = [];
 var is_loaded = false;
 var hasnt_run = true;
@@ -204,56 +206,12 @@ var active_attribute = "DL";
 var starting_map = $(".legend");
 var active_data_id = "speed_mlab"
 starting_map.addClass(active_source);
-var map_div = $(".map-overlay_1");
+export var map_div = $(".map-overlay_1");
 createSlider(map_div, active_date);
 makeToggle(source_ids, source_names, active_source, 'source_menu', true)
 makeToggle(geo_ids, geo_names, active_geo, "geo_menu", false)
 makeToggle(attribute_ids, attribute_names, active_attribute, "attribute_menu", true)
 createLegend(eval(legend_dict[active_source + "_" + active_attribute] + "_" + "labels"), eval(legend_dict[active_source + "_" + active_attribute] + "_" + "colors"), starting_map);
-
-interface County {
-    county: string[];
-    speed_mlab: number[];
-    speed_mlab_up: number[];
-    speed_477: number[];
-    speed_477_up: number[];
-    speed_diff: number[];
-    speed_diff_up: number[];
-    speed_diff_perc: number[];
-    speed_diff_perc_up: number[];
-    counts: number[];
-    date_range: string[];
-    nine_speed: number[];
-    nine_up_speed: number[];
-    broadband_cutoffs: string[];
-}
-
-export interface House {
-    house_num: string[];
-    house: string[];
-    speed_mlab_up: number[];
-    speed_477: number[];
-    speed_477_up: number[];
-    speed_diff: number[];
-    speed_diff_up: number[];
-    speed_diff_perc: number[];
-    speed_diff_perc_up: number[];
-    broadband_cutoffs: string[];
-    date_range: string[];
-    speed_mlab: number[];
-    counts: number[];
-}
-
-interface downloadData {
-    county: County[];
-    house_: House[];
-}
-
-interface globalData {
-    county: County[];
-    state_house: House[];
-    state_senate: House[];
-}
 
 //This section performs the initial load of data so that a map appears quicklymapbox_leg_county_counts_new_agg_up_full.json
 $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.json', function(data: downloadData) {
@@ -287,20 +245,21 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
             url: "mapbox://newamerica.10za116x"
         });
 
-        var workerSends: number[] = [];
+        var workerSends:{ [index: string] : number } = {};
         // Possible future enhancement: move the filtering in the below three lines into Workers as well
-        for (var j = 0; j < date_ids.length; j++) {
-            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
-            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
-            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == [date_ids[j]]; });
-            var data_filtered = { "county": filtered_county, "state_house": filtered_house, "state_senate": filtered_senate }
+        //for (var j = 0; j < date_ids.length; j++) {
+        for (let date of date_ids) {
+            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == [date]; });
+            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == [date]; });
+            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == [date]; });
+            var data_filtered: filteredData = { "county": filtered_county, "state_house": filtered_house, "state_senate": filtered_senate }
             var colorArray = [];
-            workerSends[j] = 0;
+            workerSends[date] = 0;
             for (var i = 0; i < geo_ids.length; i++) {
                 var colorWorker = new Worker("worker.js");
                 colorWorker.onmessage = function (e) {
                     colorArray[e.data.geo_id] = e.data.speed_data;
-                    workerSends[e.data.date_id]--;
+                    workerSends[date]--;
                     if (workerSends[e.data.date_id] === 0) {
                         colorArrayTime[e.data.date_id] = colorArray;
                     }
@@ -313,10 +272,10 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
                 colorWorker.postMessage({
                     filtered: data_filtered[geo_ids[i]],
                     names: data_names[i],
-                    date_id: j,
+                    date_id: date,
                     geo_id: i,
                 });
-                workerSends[j]++;
+                workerSends[date]++;
                 //colorArray.push(createColorvector(data_filtered[geo_ids[i]], data_names[i]));
             }
             //colorArrayTime.push(colorArray)
@@ -348,7 +307,6 @@ map.on("render", function() {
                     "type": "fill",
                     "source": "muni_zcta",
                     "source-layer": "muni_broadband",
-                    "visibility": "none",
                     "paint": {
                         "fill-color": "#d07386",
                         "fill-outline-color": "#cecece"
@@ -361,7 +319,8 @@ map.on("render", function() {
 
                 //add story popups
                 //make story popups work
-                map.on('click', 'places', function(e) {
+                // TODO: Fix the explicit any here
+                map.on('click', 'places', function(e: any) {
                     var coordinates = e.features[0].geometry.coordinates.slice();
                     var description = e.features[0].properties.description;
                     // Ensure that if the map is zoomed out such that multiple
@@ -390,7 +349,7 @@ map.on("render", function() {
                     el.className = 'marker';
                     // make a marker for each feature and add to the map
                     new mapboxgl.Marker(el)
-                        .setLngLat(marker.geometry.coordinates)
+                        .setLngLat(new LngLat(marker.geometry.coordinates[0],marker.geometry.coordinates[1]))
                         .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
                             .setHTML('<h3>' + marker.properties.title + '</h3><p>' + marker.properties.description + '</p>'))
                         .addTo(map);
