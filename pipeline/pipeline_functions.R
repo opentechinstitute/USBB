@@ -102,9 +102,12 @@ load_time_chunks<-function(query){
   jun_16<-"WHERE day BETWEEN '2015-12-31' AND '2016-06-30'"
   dec_16<-"WHERE day BETWEEN '2016-06-30' AND '2016-12-31'"
   jun_17<-"WHERE day BETWEEN '2016-12-31' AND '2017-06-30'"
+  dec_18<-"WHERE day BETWEEN '2017-06-30' AND '2018-12-31'"
   
   query_list <- list(dec_14=dec_14, jun_15=jun_15,
-                     dec_15=dec_15, jun_16=jun_16, dec_16=dec_16,jun_17=jun_17)
+                     dec_15=dec_15, jun_16=jun_16, 
+                     dec_16=dec_16, jun_17=jun_17,
+                     dec_18=dec_18)
   
   full_D<-data.frame()
   

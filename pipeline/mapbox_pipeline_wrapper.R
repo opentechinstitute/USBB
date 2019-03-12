@@ -17,10 +17,11 @@ library(lubridate)
 library(rmapshaper)
 library(jsonlite)
 
-setwd("C:/Users/nickt/Desktop/USB_folder")
+setwd("/Users/schulmanr/Documents/measurementlab/SOTI/pipeline")
 ### setwd("Set this to the directory")
 load("MLab_data_census_tract1")
 load("MLab_data_census_tract1_up" )
+load("D_477_2018_dec_prov")
 load("D_477_2017_jun_prov")
 load("D_477_2016_dec_prov")
 load("D_477_2016_jun_prov")
@@ -37,6 +38,7 @@ source("pipeline_functions.R")
 #Prepare census county-level data#
 ##################################
 
+D_477_2018_dec_p<-process_477_prov(D_477_2018_dec_prov)
 D_477_2017_jun_p<-process_477_prov(D_477_2017_jun_prov)
 D_477_2016_dec_p<-process_477_prov(D_477_2016_dec_prov)
 D_477_2016_jun_p<-process_477_prov(D_477_2016_jun_prov)
@@ -44,13 +46,15 @@ D_477_2015_dec_p<-process_477_prov(D_477_2015_dec_prov)
 D_477_2015_jun_p<-process_477_prov(D_477_2015_jun_prov)
 D_477_2014_dec_p<-process_477_prov(D_477_2014_dec_prov)
 
-D_477<-bind_rows(data.frame(D_477_2017_jun_p, date_range="jun_17"),
+D_477<-bind_rows(data.frame(D_477_2018_dec_p,date_range="dec_18"),
+                 data.frame(D_477_2017_jun_p,date_range="jun_17"),
                  data.frame(D_477_2016_dec_p,date_range="dec_16"),
                  data.frame(D_477_2016_jun_p,date_range="jun_16"),
                  data.frame(D_477_2015_dec_p,date_range="dec_15"),
                  data.frame(D_477_2015_jun_p,date_range="jun_15"),
                  data.frame(D_477_2014_dec_p,date_range="dec_14"))
 
+rm(D_477_2018_dec_p)
 rm(D_477_2017_jun_p)
 rm(D_477_2016_dec_p)
 rm(D_477_2016_jun_p)
@@ -154,16 +158,19 @@ load("MLab_data_state_senate_up")
 load("house_counts_2")
 load("senate_counts_2")
 
-names(D_state_house)[7]="client_lon"
-names(D_state_house)[8]="GEOID"
+#names(D_state_house)[7]="client_lon"
+#names(D_state_house)[8]="GEOID"
 names(D_state_house_up)[3]="GEOID"
 names(D_state_senate_up)[3]="GEOID"
 
 D_house<-data.frame(D_state_house, house=rep("lower", nrow(D_state_house)))%>%
-  mutate(GEOID=as.character("GEOID"))%>%group_by(GEOID, house,date_range)%>%summarise(
+  #mutate(GEOID=as.character("GEOID"))%>%
+  group_by(GEOID, house,date_range)%>%summarise(
     med_speed =median(med_speed, na.rm=TRUE)
     )
-D_house_up<-D_state_house_up%>%mutate(GEOID=as.character("GEOID"))%>%group_by(GEOID,date_range)%>%
+D_house_up<-D_state_house_up%>%
+  #mutate(GEOID=as.character("GEOID"))%>%
+  group_by(GEOID,date_range)%>%
   summarise(med_up_speed =median(med_up_speed, na.rm=TRUE) )
 
 day_range<-D_state_house%>%select(day, date_range)%>%distinct
@@ -177,8 +184,8 @@ D_house_final <- left_join(D_house_joined, D_house_up, by = c("GEOID","date_rang
 house_shape<-df_final%>%filter(FUNCSTAT=="lower")%>%select(GEOID, geometry)
 house_df<-left_join(D_house_final, house_shape)
 
-names(D_state_senate)[7]="client_lon"
-names(D_state_senate)[8]="GEOID"
+#names(D_state_senate)[7]="client_lon"
+#names(D_state_senate)[8]="GEOID"
 
 D_senate<-data.frame(D_state_senate, house=rep("upper", nrow(D_state_senate)))%>%
   group_by(GEOID, house,date_range)%>%summarise(
@@ -211,7 +218,7 @@ load("90q_senate")
 load("90q_senate_up")
 load("90q_county")
 load("90q_county_up")
-load("90q_senate")
+load("90q_house")
 load("90q_house_up")
 
 county_s<-left_join(county, totalpop_sf, by = "tract")%>%select(nine_speed, date_range, GEOID)%>%
