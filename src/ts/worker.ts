@@ -1,8 +1,10 @@
 import { House, County } from './index';
 
-this.onmessage = function(e) {
+const ctx: Worker = self as any;
+
+ctx.onmessage = function(e) {
     let colors = createColorvector(e.data.filtered, e.data.names);
-    this.postMessage({
+    ctx.postMessage({
         speed_data: colors,
         date_id: e.data.date_id,
         geo_id: e.data.geo_id,
@@ -198,6 +200,7 @@ function createColorvector(data: any, data_name: string) {
     expression_speed_diff.push("rgba(211,211,211,1)");
     expression_speed_diff_up.push("rgba(211,211,211,1)");
     expression_speed_cutoffs.push("rgba(211,211,211,1)");
+    //console.log(expression_speed_477);
     return ([
         [expression_speed_mlab, expression_speed_mlab_up, expression_speed_cutoffs],
         [expression_speed_477, expression_speed_477_up],

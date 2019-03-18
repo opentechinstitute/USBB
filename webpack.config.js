@@ -5,11 +5,11 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js']
   },
   mode: "development",
-  entry: [
-    "./src/ts/map.ts",
-  ],
+  entry: {
+    bundle: "./src/ts/map.ts",
+  },
   output: {
-    filename: "bundle.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     publicPath: "/dist/"
   },
@@ -20,6 +20,10 @@ module.exports = {
         test: /\.js$/,
         use: ["source-map-loader"],
         enforce: "pre"
+      },
+      {
+        test: /\.worker\.ts$/,
+        use: { loader: 'worker-loader' }
       }
     ]
   },

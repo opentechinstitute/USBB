@@ -1,6 +1,7 @@
 import { date_ids, date_names, map, geo_ids, source_ids, map_div, colorArrayTime,
      attribute_ids, standalone_admissible_toggles, legend_dict, legend_grouping } from './map';
 import * as mapboxgl from 'mapbox-gl';
+import $ from 'jQuery';
 
 //simple helped functions for calculating maximums
 export function getMax(arr, prop) {

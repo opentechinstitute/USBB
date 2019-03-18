@@ -2,9 +2,11 @@ import * as mapboxgl from 'mapbox-gl';
 import { LngLat, LngLatBounds } from "mapbox-gl";
 import * as d3 from 'd3';
 import * as geojson from 'geojson';
-import $ from 'jquery';
+import $ from 'jQuery';
 import { globalData, downloadData, County, House, filteredData } from './index';
 import { createSlider, makeToggle, createLegend, loadLayers, makeStandalone, loadStandalone, turnOffOtherMaps } from './minimal';
+//import WebpackWorker from './custom';
+import Worker from 'worker-loader!./Worker';
 
 //map bounds
 var bounds = new LngLatBounds(
@@ -13,7 +15,7 @@ var bounds = new LngLatBounds(
         new LngLat(2.565, 71.388889)  // Northeast coordinates
     ]);
 
-(mapboxgl as any).accessToken = 'pk.eyJ1IjoibmV3YW1lcmljYSIsImEiOiIyM3ZnYUtrIn0.57fFgg_iM7S1wLH2GQC71g';
+(mapboxgl as any).config.ACCESS_TOKEN = 'pk.eyJ1IjoibmV3YW1lcmljYSIsImEiOiIyM3ZnYUtrIn0.57fFgg_iM7S1wLH2GQC71g';
 export var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/newamerica/cjpn4e4df2gak2rp7nef3am21',
@@ -193,7 +195,7 @@ d3.select("#selectNumber").on("change", function() {
 
 });
 
-export var colorArrayTime = [];
+export var colorArrayTime: (string | string[])[] = [];
 var global_data = [];
 var is_loaded = false;
 var hasnt_run = true;
@@ -215,17 +217,18 @@ createLegend(eval(legend_dict[active_source + "_" + active_attribute] + "_" + "l
 
 //This section performs the initial load of data so that a map appears quicklymapbox_leg_county_counts_new_agg_up_full.json
 $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.json', function(data: downloadData) {
+    console.log(data);
     var lower_json: House[] = [];
     var upper_json: House[] = [];
     for (var i = 0; i < data["house_"].length; i++) {
-        if (data["house_"][i]["house"] == ["lower"]) {
+        if (data["house_"][i]["house"][0] == "lower") {
             lower_json.push(data["house_"][i]);
-        } else if (data["house_"][i]["house"] == ["upper"]) {
+        } else if (data["house_"][i]["house"][0] == "upper") {
             upper_json.push(data["house_"][i]);
         }
     }
     let global_data: globalData = { "county": data["county"], "state_house": lower_json, "state_senate": upper_json }
-
+    console.log(global_data);
     //data is the JSON string
     map.on('load', function() {
         map.addSource("legislative_lower_state", {
@@ -249,6 +252,7 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
         // Possible future enhancement: move the filtering in the below three lines into Workers as well
         //for (var j = 0; j < date_ids.length; j++) {
         for (let date of date_ids) {
+            console.log(date);
             var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == [date]; });
             var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == [date]; });
             var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == [date]; });
@@ -256,7 +260,7 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
             var colorArray = [];
             workerSends[date] = 0;
             for (var i = 0; i < geo_ids.length; i++) {
-                var colorWorker = new Worker("worker.js");
+                var colorWorker = new Worker();
                 colorWorker.onmessage = function (e) {
                     colorArray[e.data.geo_id] = e.data.speed_data;
                     workerSends[date]--;
