@@ -5,7 +5,8 @@ The [maps on the landing page for this project](https://opentechinstitute.github
 tables in BigQuery. However, to get them in the right format and join them with census tract data, they get processed by Dataflow and 
 aggregated in R. The code for that pipeline is in this repository. 
 
-There are three four in here and one function file.
+## Running the Pipeline
+There are four scripts in this directory and one function file.
 
 The four scripts are:
 
@@ -19,7 +20,11 @@ The four scripts are:
 
 To use this pipeline, download the four script files in the repo as well as pipeline functions.R and put them in the same folder. 
 
-Open 1,3, and 4 in R. Run 1 and 2. 
+* Open 1,3, and 4 in R. 
+* If this is the first time you are running the pipeline, install the necessary libraries using `install.packages("<package name">)`
+* Set the working directory on lines 18 and 149
+
+Run 1 and 2. 
 
 Follow the instructions for running the dataflow pipeline 1.ii
 
