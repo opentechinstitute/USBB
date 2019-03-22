@@ -6,7 +6,7 @@ module.exports = {
   },
   mode: "development",
   entry: {
-    bundle: "./src/ts/map.ts",
+    bundle: "./src/ts/usb.ts",
   },
   output: {
     filename: "[name].js",

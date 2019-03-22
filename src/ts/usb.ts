@@ -221,6 +221,10 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
     var lower_json: House[] = [];
     var upper_json: House[] = [];
     for (var i = 0; i < data["house_"].length; i++) {
+        if (!data["house_"][i]["house"]) {
+            // Temporary to get around malformed json
+            continue;
+        }
         if (data["house_"][i]["house"][0] == "lower") {
             lower_json.push(data["house_"][i]);
         } else if (data["house_"][i]["house"][0] == "upper") {
@@ -249,37 +253,52 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
         });
 
         var workerSends:{ [index: string] : number } = {};
+        var colorArrayReturns = 0;
         // Possible future enhancement: move the filtering in the below three lines into Workers as well
         //for (var j = 0; j < date_ids.length; j++) {
-        for (let date of date_ids) {
-            console.log(date);
-            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == [date]; });
-            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == [date]; });
-            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == [date]; });
+        for (var k = 0; k < date_ids.length; k++) {
+            var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"][0] == date_ids[k]; });
+            var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"][0] == date_ids[k]; });
+            var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"][0] == date_ids[k]; });
             var data_filtered: filteredData = { "county": filtered_county, "state_house": filtered_house, "state_senate": filtered_senate }
             var colorArray = [];
-            workerSends[date] = 0;
+            workerSends[k] = 0;
             for (var i = 0; i < geo_ids.length; i++) {
                 var colorWorker = new Worker();
                 colorWorker.onmessage = function (e) {
                     colorArray[e.data.geo_id] = e.data.speed_data;
-                    workerSends[date]--;
+                    workerSends[e.data.date_id]--;
                     if (workerSends[e.data.date_id] === 0) {
                         colorArrayTime[e.data.date_id] = colorArray;
+                        colorArrayReturns++;
                     }
-                    if (colorArrayTime.length === date_ids.length) {
+                    if (colorArrayReturns === date_ids.length) {
                         // We've received back data from all of the workers. TODO: Is there a better way to figure this out?
                         loadLayers(0, 1, 0, 1, 0, 1, 0, 1);
                         is_loaded = true;
                     }
                 };
+                switch (i) {
+                    case 0:
+                        var worker_data: (County[] | House[]) = data_filtered["county"];
+                        break;
+                    case 1:
+                        var worker_data: (County[] | House[]) = data_filtered["state_house"];
+                        break;
+                    case 2:
+                        var worker_data: (County[] | House[]) = data_filtered["state_senate"];
+                        break;                
+                    default:
+                        break;
+                }
+
                 colorWorker.postMessage({
-                    filtered: data_filtered[geo_ids[i]],
+                    filtered: worker_data,
                     names: data_names[i],
-                    date_id: date,
+                    date_id: k,
                     geo_id: i,
                 });
-                workerSends[date]++;
+                workerSends[k]++;
                 //colorArray.push(createColorvector(data_filtered[geo_ids[i]], data_names[i]));
             }
             //colorArrayTime.push(colorArray)

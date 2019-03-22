@@ -1,5 +1,5 @@
 import { date_ids, date_names, map, geo_ids, source_ids, map_div, colorArrayTime,
-     attribute_ids, standalone_admissible_toggles, legend_dict, legend_grouping } from './map';
+     attribute_ids, standalone_admissible_toggles, legend_dict, legend_grouping } from './usb';
 import * as mapboxgl from 'mapbox-gl';
 import $ from 'jQuery';
 
