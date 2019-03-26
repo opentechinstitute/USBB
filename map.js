@@ -13,6 +13,8 @@ var map = new mapboxgl.Map({
 });
 
 
+
+
 //popup JSON
 var geojson_markers = {
     type: 'FeatureCollection',
@@ -232,21 +234,42 @@ $.getJSON('https://storage.googleapis.com/thieme-us-query/477/mapbox_final_json.
             url: "mapbox://newamerica.10za116x"
         });
 
+        var workerSends = [];
+        // Possible future enhancement: move the filtering in the below three lines into Workers as well
         for (var j = 0; j < date_ids.length; j++) {
             var filtered_house = global_data["state_house"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
             var filtered_senate = global_data["state_senate"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
             var filtered_county = global_data["county"].filter(function(entry) { return entry["date_range"] == date_ids[j]; });
             var data_filtered = { "county": filtered_county, "state_house": filtered_house, "state_senate": filtered_senate }
             var colorArray = [];
+            workerSends[j] = 0;
             for (var i = 0; i < geo_ids.length; i++) {
-                colorArray.push(createColorvector(data_filtered[geo_ids[i]], data_names[i]));
+                var colorWorker = new Worker("worker.js");
+                colorWorker.onmessage = function (e) {
+                    colorArray[e.data.geo_id] = e.data.speed_data;
+                    workerSends[e.data.date_id]--;
+                    if (workerSends[e.data.date_id] === 0) {
+                        colorArrayTime[e.data.date_id] = colorArray;
+                    }
+                    if (colorArrayTime.length === date_ids.length) {
+                        // We've received back data from all of the workers. TODO: Is there a better way to figure this out?
+                        loadLayers(0, 1, 0, 1, 0, 1, 0, 1);
+                        is_loaded = true;
+                    }
+                };
+                colorWorker.postMessage({
+                    filtered: data_filtered[geo_ids[i]],
+                    names: data_names[i],
+                    date_id: j,
+                    geo_id: i,
+                });
+                workerSends[j]++;
+                //colorArray.push(createColorvector(data_filtered[geo_ids[i]], data_names[i]));
             }
-            colorArrayTime.push(colorArray)
+            //colorArrayTime.push(colorArray)
         }
 
-        loadLayers(0, 1, 0, 1, 0, 1, 0, 1);
-
-        is_loaded = true
+        
     }); // closes map load
 
 }); //closes JSON load
