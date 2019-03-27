@@ -323,41 +323,41 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
 ##############mapping loops################
 ###########################################  
   
-  
-  
+  state_ind <- "42"
+  state_name<-"PA"
   D_house <- read_feather("D_data.feather")
   D_county <- read_feather("D_data_county.feather")
   
-  D_county_PA<-D_county %>% filter(str_sub(county, 1,2)=="42"&date_range==dates[i])
-  D_house_PA<-D_house %>% filter(str_sub(house_num, 1,2)=="42"&house=="lower"&date_range==dates[i]) 
-  D_senate_PA<-D_house %>% filter(str_sub(house_num, 1,2)=="42"&house=="upper"&date_range==dates[i]) 
+  D_county_state<-D_county %>% filter(str_sub(county, 1,2)==state_ind&date_range==dates[i])
+  D_house_state<-D_house %>% filter(str_sub(house_num, 1,2)==state_ind&house=="lower"&date_range==dates[i]) 
+  D_senate_state<-D_house %>% filter(str_sub(house_num, 1,2)==state_ind&house=="upper"&date_range==dates[i]) 
   
-  rm_inds<-D_county_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
-  rm_inds_house<-D_house_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
-  rm_inds_sen<-D_senate_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+  rm_inds<-D_county_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+  rm_inds_house<-D_house_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+  rm_inds_sen<-D_senate_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
   
-  D_county_PA<-D_county_PA %>% data.frame %>% select(county, date_range, speed_diff)
-  D_senate_PA<-D_senate_PA %>% data.frame %>% select(house_num, house, date_range, speed_diff)
-  D_house_PA<-D_house_PA %>% data.frame %>% select(house_num, house, date_range, speed_diff)
+  D_county_state<-D_county_state %>% data.frame %>% select(county, date_range, speed_diff)
+  D_senate_state<-D_senate_state %>% data.frame %>% select(house_num, house, date_range, speed_diff)
+  D_house_state<-D_house_state %>% data.frame %>% select(house_num, house, date_range, speed_diff)
   
   if(length(rm_inds)!=0){
-    D_county_PA<-D_county_PA[-rm_inds,]
+    D_county_state<-D_county_state[-rm_inds,]
   }
   if(length(rm_inds_house)!=0){
-    D_house_PA<-D_house_PA[-rm_inds_house,]
+    D_house_state<-D_house_state[-rm_inds_house,]
   }
   if(length(rm_inds_sen)!=0){
-    D_senate_PA<-D_senate_PA[-rm_inds_sen,]
+    D_senate_state<-D_senate_state[-rm_inds_sen,]
   }
   
-  D_county_PA<-D_county_PA %>%  mutate_all(unlist)
-  D_house_PA<-D_house_PA %>%  mutate_all(unlist)
-  D_senate_PA<-D_senate_PA %>%  mutate_all(unlist)
+  D_county_state<-D_county_state %>%  mutate_all(unlist)
+  D_house_state<-D_house_state %>%  mutate_all(unlist)
+  D_senate_state<-D_senate_state %>%  mutate_all(unlist)
   
   cuts<-c(0,.2, 4, 10, 25,50,100,1000)
   colors_v<-viridis(7, option="magma")
   
-  D_house_PA_j<-D_house_PA %>% left_join(df_final %>% filter(FUNCSTAT=="lower"), by =c("house_num"="GEOID" )) %>% 
+  D_house_state_j<-D_house_state %>% left_join(df_final %>% filter(FUNCSTAT=="lower"), by =c("house_num"="GEOID" )) %>% 
     mutate(speed_mlab_c=cut(speed_mlab, cuts)) %>% mutate(
       speed_color = case_when(
         speed_mlab_c=="(0.2,4]"~colors_v[1],
@@ -376,7 +376,7 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
         )
       )
   
-  D_senate_PA_j<-D_senate_PA %>% left_join(df_final %>% filter(FUNCSTAT=="upper"), by =c("house_num"="GEOID" ))%>% 
+  D_senate_state_j<-D_senate_state %>% left_join(df_final %>% filter(FUNCSTAT=="upper"), by =c("house_num"="GEOID" ))%>% 
     mutate(speed_mlab_c=cut(speed_mlab, cuts))%>% mutate(
       speed_color = case_when(
         speed_mlab_c=="(0.2,4]"~colors_v[1],
@@ -395,7 +395,7 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
       )
     )
   
-  D_county_PA_j<-D_county_PA %>% left_join(totalpop_sf_county , by ="county" ) %>% 
+  D_county_state_j<-D_county_state %>% left_join(totalpop_sf_county , by ="county" ) %>% 
     mutate(NAME=str_split(NAME,",") %>% lapply(function(x)return(x[[1]])))%>% 
     mutate(speed_mlab_c=cut(speed_mlab, cuts))%>% mutate(
       speed_color = case_when(
@@ -416,8 +416,8 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     )
   
   ###Large maps
-  svg(filename = "PA_state_house.svg")
-  D_house_PA_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
+  svg(filename = str_c(state_name,"_state_house.svg"))
+  D_house_state_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
     scale_color_manual(values = viridis(7, option="magma"), 
                        labels = c(".2 to 4 Mbps","4 to 10 Mbps","10 to 25 Mbps","25 to 50 Mbps"),name = "M-Lab DL Speed")+ 
     scale_fill_manual(values = viridis(7, option="magma"),
@@ -429,8 +429,8 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     labs(title = "Download speed by State House")
   dev.off()
   
-  svg(filename = "PA_state_senate.svg")
-  D_senate_PA_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
+  svg(filename = str_c(state_name,"_state_senate.svg"))
+  D_senate_state_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
     scale_color_manual(values = viridis(7, option="magma"), 
                        labels = c(".2 to 4 Mbps","4 to 10 Mbps","10 to 25 Mbps","25 to 50 Mbps"),name = "M-Lab DL Speed")+ 
     scale_fill_manual(values = viridis(7, option="magma"),
@@ -442,8 +442,8 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     labs(title = "Download speed by State Senate")
   dev.off()
   
-  svg("PA_county.svg")
-  D_county_PA_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
+  svg(str_c(state_name,"_county.svg"))
+  D_county_state_j %>% ggplot(aes(fill=speed_color, color = speed_color))+geom_sf()+
     scale_color_manual(values = viridis(7, option="magma"), 
                        labels = c(".2 to 4 Mbps","4 to 10 Mbps","10 to 25 Mbps","25 to 50 Mbps"),name = "M-Lab DL Speed")+ 
     scale_fill_manual(values = viridis(7, option="magma"),
@@ -458,60 +458,63 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
   ###individuals maps
   setwd("~/Desktop/SOTI/map_images/County/")
   
-  for(i in 1:nrow(D_county_PA_j)){
+  for(i in 1:nrow(D_county_state_j)){
 
-    tiff(filename =str_c(D_county_PA_j[i,]$NAME %>% str_replace_all(" ", "_"),"_map.png" ) %>% tolower,
+    tiff(filename =str_c(D_county_state_j[i,]$NAME %>% str_replace_all(" ", "_"),"_map.png" ) %>% tolower,
          units="in", width=5, height=5, res=300)
     
-    color_i <- D_county_PA_j$speed_color[i]
-    label_i <- str_c(D_county_PA_j$speed_mlab[i]," Mbps")
-    p<- D_county_PA_j %>% filter(county==D_county_PA_j[i,]$county) %>% ggplot(aes(fill=speed_color, color = speed_color))+
+    color_i <- D_county_state_j$speed_color[i]
+    label_i <- str_c(D_county_state_j$speed_mlab[i]," Mbps")
+    p<- D_county_state_j %>% filter(county==D_county_state_j[i,]$county) %>% ggplot(aes(fill=speed_color, color = speed_color))+
       geom_sf()+scale_color_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       scale_fill_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
             axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(),
             panel.background = element_rect(fill = "white", colour = "white" )
       )+
-      labs(title = str_c("Download speed in ", D_county_PA_j[i,]$NAME, " PA"))
+      labs(title = str_c("Download speed in ", D_county_state_j[i,]$NAME, " ", state_name))
     print(p)
     dev.off()
     
   }
   
   setwd("~/Desktop/SOTI/map_images/State_house/")
-  for(i in 1:nrow(D_house_PA_j)){
-    tiff(filename =str_c("house_district_",D_house_PA_j[i,]$house_num %>% str_sub(3,5),"_map.png" ) %>% tolower,
+  for(i in 1:nrow(D_house_state_j)){
+    tiff(filename =str_c("house_district_",D_house_state_j[i,]$house_num %>% str_sub(3,5),"_map.png" ) %>% tolower,
          units="in", width=5, height=5, res=300)
     
-    color_i <- D_house_PA_j$speed_color[i]
-    label_i <- D_house_PA_j$speed_labels[i]
-    p<- D_house_PA_j %>% filter(house_num==D_house_PA_j[i,]$house_num) %>% ggplot(aes(fill=speed_color, color = speed_color))+
+    color_i <- D_house_state_j$speed_color[i]
+    label_i <- D_house_state_j$speed_labels[i]
+    p<- D_house_state_j %>% filter(house_num==D_house_state_j[i,]$house_num) %>% 
+      ggplot(aes(fill=speed_color, color = speed_color))+
       geom_sf()+scale_color_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       scale_fill_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
             axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(),
             panel.background = element_rect(fill = "white", colour = "white" )
       )+
-      labs(title = str_c("Download speed in PA House District ", D_house_PA_j[i,]$house_num %>% str_sub(3,5)))
+      labs(title = str_c("Download speed in ",state_name ," " ,"House District ", 
+                         D_house_state_j[i,]$house_num %>% str_sub(3,5)))
     print(p)
     dev.off()
     
   }
   
   setwd("~/Desktop/SOTI/map_images/State_senate/")
-  for(i in 1:nrow(D_senate_PA_j)){
-    tiff(filename =str_c("senate_district_",D_senate_PA_j[i,]$house_num %>% str_sub(3,5),"_map.png" ) %>% tolower,
+  for(i in 1:nrow(D_senate_state_j)){
+    tiff(filename =str_c("senate_district_",D_senate_state_j[i,]$house_num %>% str_sub(3,5),"_map.png" ) %>% tolower,
          units="in", width=5, height=5, res=300)
-    color_i <- D_senate_PA_j$speed_color[i]
-    label_i <- D_senate_PA_j$speed_labels[i]
-    p<- D_senate_PA_j %>% filter(house_num==D_senate_PA_j[i,]$house_num) %>% ggplot(aes(fill=speed_color, color = speed_color))+
+    color_i <- D_senate_state_j$speed_color[i]
+    label_i <- D_senate_state_j$speed_labels[i]
+    p<- D_senate_state_j %>% filter(house_num==D_senate_state_j[i,]$house_num) %>% 
+      ggplot(aes(fill=speed_color, color = speed_color))+
       geom_sf()+scale_color_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       scale_fill_manual(values = color_i,labels=label_i, name = "M-Lab DL Speed")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
             axis.title.y=element_blank(), axis.text.y=element_blank(),axis.ticks.y=element_blank(),
             panel.background = element_rect(fill = "white", colour = "white" )
       )+
-      labs(title = str_c("Download speed in PA Senate District ", D_senate_PA_j[i,]$house_num %>% str_sub(4,5)))
+      labs(title = str_c("Download speed in ",state_name, " Senate District ", D_senate_state_j[i,]$house_num %>% str_sub(4,5)))
     print(p)
     dev.off()
     
@@ -522,46 +525,46 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
   ####477 time perdiod difference maps 
   dates<-DD1$county$date_range %>% unlist %>% unique
   
-  setwd("~/Desktop/SOTI/map_images/PA_level/")
+  setwd(str_c("~/Desktop/SOTI/map_images/", state_name, "_level/"))
   
   for(i in 1:length(dates)){
     
-    D_county_PA<-D_county %>% filter(str_sub(county, 1,2)=="42"&date_range==dates[i])
-    D_house_PA<-D_house %>% filter(str_sub(house_num, 1,2)=="42"&house=="lower"&date_range==dates[i]) 
-    D_senate_PA<-D_house %>% filter(str_sub(house_num, 1,2)=="42"&house=="upper"&date_range==dates[i]) 
+    D_county_state<-D_county %>% filter(str_sub(county, 1,2)==state_ind&date_range==dates[i])
+    D_house_state<-D_house %>% filter(str_sub(house_num, 1,2)==state_ind&house=="lower"&date_range==dates[i]) 
+    D_senate_state<-D_house %>% filter(str_sub(house_num, 1,2)==state_ind&house=="upper"&date_range==dates[i]) 
     
-    rm_inds<-D_county_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
-    rm_inds_house<-D_house_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
-    rm_inds_sen<-D_senate_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+    rm_inds<-D_county_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+    rm_inds_house<-D_house_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+    rm_inds_sen<-D_senate_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
 
-    D_county_PA<-D_county_PA %>% data.frame %>% select(county, date_range, speed_diff)
-    D_senate_PA<-D_senate_PA %>% data.frame %>% select(house_num, house, date_range, speed_diff)
-    D_house_PA<-D_house_PA %>% data.frame %>% select(house_num, house, date_range, speed_diff)
+    D_county_state<-D_county_state %>% data.frame %>% select(county, date_range, speed_diff)
+    D_senate_state<-D_senate_state %>% data.frame %>% select(house_num, house, date_range, speed_diff)
+    D_house_state<-D_house_state %>% data.frame %>% select(house_num, house, date_range, speed_diff)
     
     if(length(rm_inds)!=0){
-      D_county_PA<-D_county_PA[-rm_inds,]
+      D_county_state<-D_county_state[-rm_inds,]
     }
     if(length(rm_inds_house)!=0){
-      D_house_PA<-D_house_PA[-rm_inds_house,]
+      D_house_state<-D_house_state[-rm_inds_house,]
     }
     if(length(rm_inds_sen)!=0){
-      D_senate_PA<-D_senate_PA[-rm_inds_sen,]
+      D_senate_state<-D_senate_state[-rm_inds_sen,]
     }
 
-    D_county_PA<-D_county_PA %>%  mutate_all(unlist)
-    D_house_PA<-D_house_PA %>%  mutate_all(unlist)
-    D_senate_PA<-D_senate_PA %>%  mutate_all(unlist)
+    D_county_state<-D_county_state %>%  mutate_all(unlist)
+    D_house_state<-D_house_state %>%  mutate_all(unlist)
+    D_senate_state<-D_senate_state %>%  mutate_all(unlist)
   
-    D_senate_PA<-df_final %>% filter(FUNCSTAT=="upper"&str_sub(GEOID,1,2)=="42") %>% 
-                                       left_join(D_senate_PA, by = c("GEOID"="house_num" ))
+    D_senate_state<-df_final %>% filter(FUNCSTAT=="upper"&str_sub(GEOID,1,2)==state_ind) %>% 
+                                       left_join(D_senate_state, by = c("GEOID"="house_num" ))
     
-    D_house_PA<-df_final %>% filter(FUNCSTAT=="lower"&str_sub(GEOID,1,2)=="42") %>% 
-      left_join(D_house_PA, by = c("GEOID"="house_num" ))
+    D_house_state<-df_final %>% filter(FUNCSTAT=="lower"&str_sub(GEOID,1,2)==state_ind) %>% 
+      left_join(D_house_state, by = c("GEOID"="house_num" ))
     
     cuts<-c(-1000, -25, -15, -5,-1, 1, 5,15,25,1000)
     colors_v<- c('#01665e', '#35978f', '#80cdc1', '#c7eae5', '#f5f5f5', '#f6e8c3', '#dfc27d', '#bf812d', '#8c510a')
     
-    D_house_PA_j<-D_house_PA  %>% mutate(speed_mlab_c=cut(speed_diff, cuts)) %>% mutate(
+    D_house_state_j<-D_house_state  %>% mutate(speed_mlab_c=cut(speed_diff, cuts)) %>% mutate(
         speed_color = case_when(
           speed_mlab_c=="(-1e+03,-25]"~colors_v[1],
           speed_mlab_c=="(-25,-15]"~colors_v[2],
@@ -587,7 +590,7 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
         )
       )
     
-    D_senate_PA_j<-D_senate_PA %>% 
+    D_senate_state_j<-D_senate_state %>% 
       mutate(speed_mlab_c=cut(speed_diff, cuts))%>% mutate(
         speed_color = case_when(
           speed_mlab_c=="(-1e+03,-25]"~colors_v[1],
@@ -614,7 +617,7 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
         )
       )
     
-    D_county_PA_j<-D_county_PA %>% left_join(totalpop_sf_county , by ="county" ) %>% 
+    D_county_state_j<-D_county_state %>% left_join(totalpop_sf_county , by ="county" ) %>% 
       mutate(NAME=str_split(NAME,",") %>% lapply(function(x)return(x[[1]])))%>% 
       mutate(speed_mlab_c=cut(speed_diff, cuts))%>% mutate(
         speed_color = case_when(
@@ -642,14 +645,14 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
         )
       )
     
-    D_color<-D_county_PA_j %>% select(speed_color, speed_labels) %>% unique
+    D_color<-D_county_state_j %>% select(speed_color, speed_labels) %>% unique
     orders<-D_color$speed_labels %>% str_split(" ") %>% lapply(function(x) return(x[1])) %>% unlist %>% as.numeric%>% order
     D_color<-D_color[orders,]
     
-    tiff(filename =str_c("PA_county_",D_county_PA_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
+    tiff(filename =str_c(state_name,"_county_",D_county_state_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
          units="in", width=5, height=5, res=300)
     
-    p<-D_county_PA_j %>% ggplot(aes(fill=speed_color), color = "#lightgrey")+geom_sf()+
+    p<-D_county_state_j %>% ggplot(aes(fill=speed_color), color = "#lightgrey")+geom_sf()+
       scale_fill_manual(values = D_color$speed_color, 
                         labels =  D_color$speed_labels, name ="")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
@@ -661,14 +664,14 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     print(p)
     dev.off()
     
-    D_color<-D_senate_PA_j %>% data.frame%>% select(speed_color, speed_labels) %>% unique
+    D_color<-D_senate_state_j %>% data.frame%>% select(speed_color, speed_labels) %>% unique
     orders<-D_color$speed_labels %>% str_split(" ") %>% lapply(function(x) return(x[1])) %>% unlist %>% as.numeric %>% order
     D_color<-D_color[orders,]
     
-    tiff(filename =str_c("PA_senate_district_",D_county_PA_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
+    tiff(filename =str_c(state_name,"_senate_district_",D_county_state_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
          units="in", width=5, height=5, res=300)
     
-    p<-D_senate_PA_j %>% ggplot(aes(fill=speed_color), color = "#lightgrey")+geom_sf()+ 
+    p<-D_senate_state_j %>% ggplot(aes(fill=speed_color), color = "#lightgrey")+geom_sf()+ 
       scale_fill_manual(values = D_color$speed_color, 
                         labels =  D_color$speed_labels, name ="")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
@@ -679,14 +682,14 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     print(p)
     dev.off()
     
-    D_color<-D_house_PA_j %>% data.frame%>% select(speed_color, speed_labels) %>% unique
+    D_color<-D_house_state_j %>% data.frame%>% select(speed_color, speed_labels) %>% unique
     orders<-D_color$speed_labels %>% str_split(" ") %>% lapply(function(x) return(x[1])) %>% unlist %>% as.numeric %>% order
     D_color<-D_color[orders,]
     
-    tiff(filename =str_c("PA_house_",D_county_PA_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
+    tiff(filename =str_c(state_name,"_house_",D_county_state_j$date_range %>% unique,"_map.tiff" ) %>% tolower,
          units="in", width=5, height=5, res=300)
     
-    p<-D_house_PA_j %>% ggplot(aes(fill=speed_color), color = "lightgrey")+geom_sf()+
+    p<-D_house_state_j %>% ggplot(aes(fill=speed_color), color = "lightgrey")+geom_sf()+
       scale_fill_manual(values = D_color$speed_color, 
                         labels =  D_color$speed_labels, name ="")+ 
       theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank(),
@@ -700,18 +703,18 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
     
   }
   
-  D_county_PA<-DD1$county %>% select(county, speed_mlab, speed_477, speed_diff, date_range) %>% 
-    filter(str_sub(county, 1,2)=="42")
+  D_county_state<-DD1$county %>% select(county, speed_mlab, speed_477, speed_diff, date_range) %>% 
+    filter(str_sub(county, 1,2)==state_ind)
   
-  rm_inds<-  D_county_PA$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
+  rm_inds<-  D_county_state$speed_diff %>% lapply(function(x)return(is.null(x))) %>% unlist %>% which
   
   if(length(rm_inds)!=0){
-    D_county_PA<-D_county_PA[-rm_inds,]
+    D_county_state<-D_county_state[-rm_inds,]
   }
   
-  D_county_PA<-D_county_PA %>%  mutate_all(unlist)
+  D_county_state<-D_county_state %>%  mutate_all(unlist)
  
-  D_county_PA %>% group_by(county, date_range) %>% summarise(NDT_value=median(speed_mlab), Value_477=median(speed_477),
+  D_county_state %>% group_by(county, date_range) %>% summarise(NDT_value=median(speed_mlab), Value_477=median(speed_477),
                                                             Difference = median(speed_diff))
 
   ###########
@@ -724,7 +727,7 @@ D_data<-data.frame(house_num=legis_comp_nine_df$GEOID.y,
   
   D_for_table<-rbind(D_d, D_d_c)
   D_for_table %>% select(house, date_range, GEOID, speed_mlab, speed_477, speed_diff) %>%
-    filter(str_sub(GEOID, 1,2)=="42") %>% group_by(GEOID,house, date_range) %>% 
+    filter(str_sub(GEOID, 1,2)==state_ind) %>% group_by(GEOID,house, date_range) %>% 
     summarise(NDT_value=median(speed_mlab), Value_477=median(speed_477),Difference = median(speed_diff)) %>%
     write_csv(path = "Speed_table.csv")
 
@@ -744,15 +747,15 @@ state = 'Pennsylvania'"
 project <- "mlab-sandbox"
 
 D_locs<-query_exec(locs_q,project = project, use_legacy_sql=FALSE, max_pages = Inf)
-PA_county<-totalpop_sf_county %>% mutate(county=str_sub(county,1,2)) %>% filter(county == "42")
+state_county<-totalpop_sf_county %>% mutate(county=str_sub(county,1,2)) %>% filter(county == state_ind)
 D_points<-D_locs %>% select(lat = latitude, lon=longitude) %>%  st_as_sf(coords=c( "lon","lat"))
-st_crs(D_points)<-st_crs(PA_county)
+st_crs(D_points)<-st_crs(state_county)
 
-tiff(filename="point_locations_PA.tiff" ,units="in", width=5, height=5, res=300)
+tiff(filename=str_c("point_locations_",state_name,".tiff") ,units="in", width=5, height=5, res=300)
 
- PA_county%>% ggplot()+geom_sf(fill="white", color = "#cdcdcd")+geom_sf(data= D_points, size=.1, color = "#808080")+
+ state_county%>% ggplot()+geom_sf(fill="white", color = "#cdcdcd")+geom_sf(data= D_points, size=.1, color = "#808080")+
   theme(panel.background = element_rect(color = "white", fill = "white"))+
-  labs(title="Test locations in PA from 2009 through 2018")
+  labs(title=str_c("Test locations in ", state_name," from 2009 through 2018"))
  
  dev.off()
 
