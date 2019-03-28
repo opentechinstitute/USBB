@@ -1,7 +1,7 @@
 # United States of Broadband (USB)
 A private repository for the working draft of the United States of Broadband/State of the Internet OTI project
 
-The [maps on the landing page for this project](https://opentechinstitute.github.io/SOTI/SOTI.html) use data that come from the M-Lab NDT 
+The [maps on the landing page for this project](https://opentechinstitute.github.io/USBB/SOTI.html) use data that come from the M-Lab NDT 
 tables in BigQuery. However, to get them in the right format and join them with census tract data, they get processed by Dataflow and 
 aggregated in R. The code for that pipeline is in this repository. 
 
