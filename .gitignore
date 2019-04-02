@@ -5,3 +5,9 @@ yarn-error.log
 .DS_Store
 .vscode
 .Rhistory
+pipeline/bin
+pipeline/include
+pipeline/lib
+.Python
+.Rhistory
+pipeline/name.egg-info
