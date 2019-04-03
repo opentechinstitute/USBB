@@ -30,8 +30,7 @@ us <- unique(fips_codes$state)[1:51]
 totalpop_sf <- reduce(
   purrr::map(us, function(x) {
     get_acs(geography = "tract", variables =
-              c("B17012_001"), 
-            state = x, geometry = TRUE)
+      c("B17012_001"), state = x, geometry = TRUE, cb = FALSE, year = 2016)
   }), 
   rbind
 )

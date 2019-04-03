@@ -2,7 +2,13 @@
 
 ## general notes
 
-* uses a service account, requires setting env var `GOOGLE_APPLICATION_CREDENTIALS`
+* need to have/know
+  * GCP service account with roles???
+  * Set local env var `GOOGLE_APPLICATION_CREDENTIALS` to point at JSON creds for service acct
+  * GCP project name
+  * staging location (GCS storage bucket gs://url/staging)
+  * temp location (GCS storage bucket gs://url/temp)
+
 
 ## Directions for how to run the pipeline for different geometries
 
@@ -60,7 +66,7 @@ For the maps, I added a new section onto `mapbox_pipeline_wrapper.R`, which I sh
 Quick Summary
 
 * Query for M-Lab NDT data
-* Format and join with census tract data using Dataflow
+* Format and join NDT data with census tract data using Dataflow
 * Compute aggregate data by geography using R code
 
 ## Add a new FCC release

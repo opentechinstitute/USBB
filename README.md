@@ -26,7 +26,7 @@ There are four scripts and one function file:
 * Run **post_dataflow_dataset_import.R**
 
 That will produce the geojson and json files that the Mapbox map embedded in the project landing page needs. The pipeline also produces 
-several other R objects as auxilliary files. These are data files that are used in mapbox_pipeline_wrapper.
+several other R objects as auxilliary files. These are data files that are used in `mapbox_pipeline_wrapper`.
 
 ## BQ Tables
 The BQ tables that are needed to run the pipeline all live in the thieme dataset inside the mlab-sandbox project. Many of the tables below have two names. This is because I did a bad job of naming them the first time around. The new, more regular names are the ones outside the parentheses. The older names are inside the parentheses. The reason I’m giving both is that BQ doesn’t allow for renaming tables, you have to copy the table to rename it. However, BQ also has a great record system that lets you follow the chain of what table was used to produce another table. Since those record use the original names, I’m keeping both for pipeline auditing purposes. 
