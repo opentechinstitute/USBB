@@ -148,7 +148,7 @@ options = {'project': 'mlab-sandbox',
 
            'temp_location': 'gs://oti-usob/temp', #Set this to the temp location you set up inside GCP when initializing Dataflow.
 
-           'setup_file': '/Users/schulmanr/Documents/measurementlab/SOTI/pipeline/setup.py',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
+           'setup_file': 'setup.py',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
                                               #of the packages needed to run this code and this file tells them to get them. Nothing works without this. 
            'workerCacheSizeMb': 400, #These numbers need to be set by the user in accordance with their budget. These numbers helped the code process many entries very quickly
                                      #but I was lucky to have free access to Google resources when writing this code. These numbers might be very expensive (in human $) otherwise
