@@ -147,7 +147,7 @@ options = {'project': 'mlab-sandbox',
 
            'temp_location': 'gs://oti-usob/temp', #Set this to the temp location you set up inside GCP when initializing Dataflow.
 
-           'setup_file': 'Write stuff here',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
+           'setup_file': 'setup.py',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
                                               #of the packages needed to run this code and this file tells them to get them. Nothing works without this. 
            'workerCacheSizeMb': 400, #These numbers need to be set by the user in accordance with their budget. These numbers helped the code process many entries very quickly
                                      #but I was lucky to have free access to Google resources when writing this code. These numbers might be very expensive (in human $) otherwise
@@ -168,7 +168,7 @@ pipeline = beam.Pipeline(options=pipeline_options)
 #polygons.
 tract_shapes = (
     pipeline | "read tract shapes" >> beam.io.Read(
-        beam.io.BigQuerySource(table='dataflow_mapbox_upper', dataset='oti_usob')) #dataset should be the name of the BigQuery dataset that contains the table of stringified 
+        beam.io.BigQuerySource(table='pre_dataflow_polygon_house', dataset='oti_usob')) #dataset should be the name of the BigQuery dataset that contains the table of stringified 
                                                                                  #polygons. Table should be the actual table.
     | "turn into polygon" >> beam.ParDo(to_geom_shape())
 )
@@ -200,7 +200,7 @@ res = (NDT_shuff
                                                                                               #out the nested array of polygons to see if the error is there. The argument to
                                                                                               #WriteToText in my case is a Google Bucket. In partiucular this line is useful
                                                                                               #for debugging writing to BigQuery issues. BigQuery's schema is very particular.
-       | 'write to BQ' >> beam.io.WriteToBigQuery(table="dataflow_mapbox_upper_DL", dataset="oti_usob", schema=table_schema)
+       | 'write to BQ' >> beam.io.WriteToBigQuery(table="dataflow_output_state_house", dataset="oti_usob", schema=table_schema)
        )
 
 pipeline.run()

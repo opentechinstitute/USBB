@@ -33,7 +33,7 @@ to_dataflow_string = function(dataflow_sf, file_name){
                                "Values"=val,
                                "state"=str_c(" ",toTitleCase(dataflow_sf[i,]$state))
       )
-    }else{
+    }else if (num_polys > 1) {
       for(j in 1:num_polys){
         val <- tryCatch(stringify(dataflow_sf[i,]$geometry[[1]][[j]][[1]]),
                         error=function(e){return("e")})

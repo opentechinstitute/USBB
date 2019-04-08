@@ -15,7 +15,7 @@ library(maps)
 library(tigris)
 
 ###Set this to directory on your computer where you'll be working on this project 
-setwd("Set this to the directory")
+setwd("/home/ross/SOTI/pipeline")
 
 ###If pipeline_functions.R is in the same directory as this file, you'll be OK. If not, set this
 ###to the folder containing it
@@ -146,7 +146,7 @@ to_dataflow_string(dataflow_upper_df, "dataflow_mapbox1_upper_combine.json")
 ##########
 #ZCTA I/O#
 ##########
-setwd("C:/users/nickt/desktop/USB_folder/")
+setwd("/home/ross/SOTI/pipeline")
 df <- zctas(cb = TRUE)
 df_zcta<-df%>%st_as_sf
 D_muni <-read.csv("Community Broadband Networks-filtered.csv")

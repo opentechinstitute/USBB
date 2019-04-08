@@ -21,7 +21,7 @@ APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
 APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`oti_usob.dataflow_county_final_copy`
+`oti_usob.Aggregated_MLab_DL_census_new`
 
 GROUP BY
 day, tract"
@@ -32,7 +32,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`oti_usob.test_UL`
+`oti_usob.Aggregated_MLab_UL_census_new`
 
 GROUP BY
 day, tract"
@@ -45,20 +45,7 @@ APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`oti_usob.dataflow_lower_test_final`
-
-GROUP BY
-client_lat, client_lon, day, tract"
-
-query_house_90q<-"#standardSQL
-
-SELECT day,
-APPROX_QUANTILES(med_rtt, 1000)[OFFSET(900)] as med_rtt,
-APPROX_QUANTILES(med_speed, 1000)[OFFSET(900)] as med_speed,
-SUM(count_ip) as tract_test_counts,
-client_lat, client_lon, tract
-FROM
-`oti_usob.dataflow_lower_test_final`
+`oti_usob.Aggregated_MLab_DL_state_house_new`
 
 GROUP BY
 client_lat, client_lon, day, tract"
@@ -69,18 +56,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 tract
 FROM
-`oti_usob.mixed_house`
-
-GROUP BY
-day, tract"
-
-query_house_up_90q<-"#standardSQL
-
-SELECT day,
-APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(900)] as med_up_speed,
-tract
-FROM
-`oti_usob.mixed_house`
+`oti_usob.Aggregated_MLab_UL_state_house_new`
 
 GROUP BY
 day, tract"
@@ -90,24 +66,11 @@ query_senate<-"#standardSQL
 SELECT day,
 APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
 APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
+APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`oti_usob.Aggregated_MLab_DL_state_senate`
-
-
-GROUP BY
-client_lat, client_lon, day, tract"
-
-query_senate_90q<-"#standardSQL
-
-SELECT day,
-APPROX_QUANTILES(med_rtt, 1000)[OFFSET(900)] as med_rtt,
-APPROX_QUANTILES(med_speed, 1000)[OFFSET(900)] as med_speed,
-SUM(count_ip) as tract_test_counts,
-client_lat, client_lon, tract
-FROM
-`oti_usob.Aggregated_MLab_DL_state_senate`
+`oti_usob.Aggregated_MLab_DL_state_senate_new`
 
 
 GROUP BY
@@ -119,45 +82,34 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
 senate_tract
 FROM
-`oti_usob.Aggregated_MLab_UL_state_senate`
-
-GROUP BY
-day, senate_tract"
-
-query_senate_up_90q<-"#standardSQL
-
-SELECT day,
-APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(900)] as med_up_speed,
-senate_tract
-FROM
-`oti_usob.Aggregated_MLab_UL_state_senate`
+`oti_usob.Aggregated_MLab_UL_state_senate_new`
 
 GROUP BY
 day, senate_tract"
 
 query_477<-"#standardSQL
 SELECT
-  IF(CHAR_LENGTH(CAST(Census_Block_FIPS_CODE AS STRING))=14,SUBSTR(CONCAT('0',CAST(Census_Block_FIPS_CODE AS STRING)),1,11),
-  SUBSTR(CAST(Census_Block_FIPS_CODE AS STRING),1,11)) AS FIPS_tract,
-  COUNT(DISTINCT DBA_Name) AS num_con_prov,
-  APPROX_QUANTILES(Max_Advertised_Downstream_Speed__mbps_,1000)[OFFSET(500)] AS med_dl,
-  APPROX_QUANTILES( Max_Advertised_Upstream_Speed__mbps_ ,1000)[OFFSET(500)] AS med_ul
+IF(CHAR_LENGTH(CAST(Census_Block_FIPS_CODE AS STRING))=14,SUBSTR(CONCAT('0',CAST(Census_Block_FIPS_CODE AS STRING)),1,11),
+SUBSTR(CAST(Census_Block_FIPS_CODE AS STRING),1,11)) AS FIPS_tract,
+COUNT(DISTINCT DBA_Name) AS num_con_prov,
+APPROX_QUANTILES(Max_Advertised_Downstream_Speed__mbps_,1000)[OFFSET(500)] AS med_dl,
+APPROX_QUANTILES( Max_Advertised_Upstream_Speed__mbps_ ,1000)[OFFSET(500)] AS med_ul
 FROM
-  `TABLE`
+`TABLE`
 WHERE
-  Consumer = '1'
+Consumer = '1'
 GROUP BY
-  FIPS_tract"
+FIPS_tract"
 
 query_477_prov<-"#standardSQL
 SELECT
 APPROX_QUANTILES(Max_Advertised_Downstream_Speed__mbps_,
-                 1000)[ OFFSET (500)] AS med_dl,
+1000)[ OFFSET (500)] AS med_dl,
 APPROX_QUANTILES(Max_Advertised_Upstream_Speed__mbps_,
-                 1000)[ OFFSET (500)] AS med_ul,
+1000)[ OFFSET (500)] AS med_ul,
 Provider_name,
 SUBSTR(IF(CHAR_LENGTH(CAST(Census_Block_FIPS_CODE AS STRING))=14,SUBSTR(CONCAT('0',CAST(Census_Block_FIPS_CODE AS STRING)),1,11),
-          SUBSTR(CAST(Census_Block_FIPS_CODE AS STRING),1,11)),1,5) AS FIPS_tract
+SUBSTR(CAST(Census_Block_FIPS_CODE AS STRING),1,11)),1,5) AS FIPS_tract
 FROM
 `TABLE`
 WHERE
@@ -171,18 +123,17 @@ tract_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`oti_usob.ndt_spatial`
+`oti_usob.ndt_spatial_census_tract_new`
 
 GROUP BY 
 
 tract, day"
 
-#`oti_usob.dataflow_upper_final_int`  
 senate_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`oti_usob.dataflow_upper_final_int`
+`oti_usob.ndt_spatial_state_senate_new`
 
 GROUP BY 
 
@@ -192,7 +143,7 @@ house_count_query <- "#standardSQL
 SELECT DATE_TRUNC(partition_date, MONTH) AS day, COUNT(connection_spec.client_ip) as count_ip, tract
 
 FROM 
-`oti_usob.dataflow_lower_test_int_final`
+`oti_usob.ndt_spatial_state_house_new`
 
 GROUP BY 
 
