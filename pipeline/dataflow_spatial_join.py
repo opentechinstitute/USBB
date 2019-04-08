@@ -63,16 +63,16 @@ class check_in_tract_side_mpt(beam.DoFn):
         lon = element['longitude']
         state = str(element['state'])  # rem for single state
 
-        tract = [polys[i][0] for i in range(len(polys))]
-        poly_list = [polys[i][1] for i in range(len(polys))]
-        state_list = [str(polys[i][2]).strip() for i in range(len(polys))]
+        tract = [polys[i][0] for i in range(len(polys))] # Array of tract number
+        poly_list = [polys[i][1] for i in range(len(polys))] # Array of lat/lon pairs
+        state_list = [str(polys[i][2]).strip() for i in range(len(polys))] # Array of associated states
 
         x = float(lon)
         y = float(lat)
         n_list = len(poly_list)
         for j in range(0, n_list):
             poly = poly_list[j]
-            poly = [[float(poly[i][0]), float(poly[i][1])]
+            poly = [[float(poly[i][0]), float(poly[i][1])]       # Break out lat/lon pairs
                     for i in range(len(poly))]
             lens = [len(pair) == 2 for pair in poly]
             inds_l = [i for i, x in enumerate(lens) if x]
@@ -102,40 +102,41 @@ class check_in_tract_side_mpt(beam.DoFn):
 ########################
 #Create BigQuery Schema#
 ########################
-table_schema = bigquery.TableSchema()
-lat_schema = bigquery.TableFieldSchema()
-lat_schema.name = 'lat'
-lat_schema.type = 'STRING'
-lat_schema.mode = 'NULLABLE'
-table_schema.fields.append(lat_schema)
+table_schema = 'lat:STRING,long:STRING,tract:STRING,state:STRING,state_list:STRING'
+# table_schema = bigquery.TableSchema()
+# lat_schema = bigquery.TableFieldSchema()
+# lat_schema.name = 'lat'
+# lat_schema.type = 'STRING'
+# lat_schema.mode = 'NULLABLE'
+# table_schema.fields.append(lat_schema)
 
-long_schema = bigquery.TableSchema()
-long_schema = bigquery.TableFieldSchema()
-long_schema.name = 'long'
-long_schema.type = 'STRING'
-long_schema.mode = 'NULLABLE'
-table_schema.fields.append(long_schema)
+# long_schema = bigquery.TableSchema()
+# long_schema = bigquery.TableFieldSchema()
+# long_schema.name = 'long'
+# long_schema.type = 'STRING'
+# long_schema.mode = 'NULLABLE'
+# table_schema.fields.append(long_schema)
 
-# A nested field
-name_schema = bigquery.TableFieldSchema()
-name_schema.name = 'tract'
-name_schema.type = 'STRING'
-name_schema.mode = 'NULLABLE'
-table_schema.fields.append(name_schema)
+# # A nested field
+# name_schema = bigquery.TableFieldSchema()
+# name_schema.name = 'tract'
+# name_schema.type = 'STRING'
+# name_schema.mode = 'NULLABLE'
+# table_schema.fields.append(name_schema)
 
-# A nested field
-state_schema = bigquery.TableFieldSchema()
-state_schema.name = 'state'
-state_schema.type = 'STRING'
-state_schema.mode = 'NULLABLE'
-table_schema.fields.append(state_schema)
+# # A nested field
+# state_schema = bigquery.TableFieldSchema()
+# state_schema.name = 'state'
+# state_schema.type = 'STRING'
+# state_schema.mode = 'NULLABLE'
+# table_schema.fields.append(state_schema)
 
-# A nested field
-state_schema_a = bigquery.TableFieldSchema()
-state_schema_a.name = 'state_list'
-state_schema_a.type = 'STRING'
-state_schema_a.mode = 'NULLABLE'
-table_schema.fields.append(state_schema_a)
+# # A nested field
+# state_schema_a = bigquery.TableFieldSchema()
+# state_schema_a.name = 'state_list'
+# state_schema_a.type = 'STRING'
+# state_schema_a.mode = 'NULLABLE'
+# table_schema.fields.append(state_schema_a)
 
 ######################
 #Set Dataflow Options#
@@ -147,7 +148,7 @@ options = {'project': 'mlab-sandbox',
 
            'temp_location': 'gs://oti-usob/temp', #Set this to the temp location you set up inside GCP when initializing Dataflow.
 
-           'setup_file': 'Write stuff here',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
+           'setup_file': '/Users/schulmanr/Documents/measurementlab/SOTI/pipeline/setup.py',  #Set this to the location of the local file setup.py. This is crucial. The Dataflow nodes running python don't have all 
                                               #of the packages needed to run this code and this file tells them to get them. Nothing works without this. 
            'workerCacheSizeMb': 400, #These numbers need to be set by the user in accordance with their budget. These numbers helped the code process many entries very quickly
                                      #but I was lucky to have free access to Google resources when writing this code. These numbers might be very expensive (in human $) otherwise
@@ -168,12 +169,12 @@ pipeline = beam.Pipeline(options=pipeline_options)
 #polygons.
 tract_shapes = (
     pipeline | "read tract shapes" >> beam.io.Read(
-        beam.io.BigQuerySource(table='dataflow_mapbox_upper', dataset='oti_usob')) #dataset should be the name of the BigQuery dataset that contains the table of stringified 
+        beam.io.BigQuerySource(table='pre_dataflow_polygon_senate', dataset='oti_usob')) #dataset should be the name of the BigQuery dataset that contains the table of stringified 
                                                                                  #polygons. Table should be the actual table.
     | "turn into polygon" >> beam.ParDo(to_geom_shape())
 )
 
-#(tract_shapes|'WriteOutputtracts' >> beam.io.WriteToText('gs://thieme-us-query/477/tracts')) #This is a useful debugging line. If something is going wrong, it's useful to write
+#(tract_shapes|'WriteOutputtracts' >> beam.io.WriteToText('gs://oti-usob/dataflow/debug')) #This is a useful debugging line. If something is going wrong, it's useful to write
                                                                                               #out the nested array of polygons to see if the error is there. The argument to
                                                                                               #WriteToText in my case is a Google Bucket.
 
@@ -200,7 +201,7 @@ res = (NDT_shuff
                                                                                               #out the nested array of polygons to see if the error is there. The argument to
                                                                                               #WriteToText in my case is a Google Bucket. In partiucular this line is useful
                                                                                               #for debugging writing to BigQuery issues. BigQuery's schema is very particular.
-       | 'write to BQ' >> beam.io.WriteToBigQuery(table="dataflow_mapbox_upper_DL", dataset="oti_usob", schema=table_schema)
+       | 'write to BQ' >> beam.io.WriteToBigQuery(table="post_dataflow_senate", dataset="oti_usob", schema=table_schema)
        )
 
 pipeline.run()
