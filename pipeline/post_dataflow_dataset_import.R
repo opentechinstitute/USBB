@@ -18,10 +18,10 @@ query_agg_ip<-"#standardSQL
 
 SELECT day,
 APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
-APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
+APPROX_QUANTILES(download_med_speed, 1000)[OFFSET(500)] as download_med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`oti_usob.Aggregated_MLab_DL_census_new`
+`oti_usob.Aggregated_MLab_DL_census`
 
 GROUP BY
 day, tract"
@@ -32,7 +32,7 @@ SELECT day,
 APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 SUM(count_ip) as tract_test_counts, tract
 FROM
-`oti_usob.Aggregated_MLab_UL_census_new`
+`oti_usob.Aggregated_MLab_UL_census`
 
 GROUP BY
 day, tract"
@@ -41,11 +41,11 @@ query_house<-"#standardSQL
 
 SELECT day,
 APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
-APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
+APPROX_QUANTILES(download_med_speed, 1000)[OFFSET(500)] as download_med_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`oti_usob.Aggregated_MLab_DL_state_house_new`
+`oti_usob.Aggregated_MLab_DL_state_house`
 
 GROUP BY
 client_lat, client_lon, day, tract"
@@ -53,10 +53,10 @@ client_lat, client_lon, day, tract"
 query_house_up<-"#standardSQL
 
 SELECT day,
-APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
+APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 tract
 FROM
-`oti_usob.Aggregated_MLab_UL_state_house_new`
+`oti_usob.Aggregated_MLab_UL_state_house`
 
 GROUP BY
 day, tract"
@@ -65,12 +65,11 @@ query_senate<-"#standardSQL
 
 SELECT day,
 APPROX_QUANTILES(med_rtt, 1000)[OFFSET(500)] as med_rtt,
-APPROX_QUANTILES(med_speed, 1000)[OFFSET(500)] as med_speed,
-APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
+APPROX_QUANTILES(download_med_speed, 1000)[OFFSET(500)] as download_med_speed,
 SUM(count_ip) as tract_test_counts,
 client_lat, client_lon, tract
 FROM
-`oti_usob.Aggregated_MLab_DL_state_senate_new`
+`oti_usob.Aggregated_MLab_DL_state_senate`
 
 
 GROUP BY
@@ -79,10 +78,10 @@ client_lat, client_lon, day, tract"
 query_senate_up<-"#standardSQL
 
 SELECT day,
-APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as med_up_speed,
+APPROX_QUANTILES(upload_med_speed, 1000)[OFFSET(500)] as upload_med_speed,
 senate_tract
 FROM
-`oti_usob.Aggregated_MLab_UL_state_senate_new`
+`oti_usob.Aggregated_MLab_UL_state_senate`
 
 GROUP BY
 day, senate_tract"
