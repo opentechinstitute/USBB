@@ -1,37 +1,75 @@
 # United States of Broadband (USB)
-A private repository for the working draft of the United States of Broadband/State of the Internet OTI project
 
-The [maps on the landing page for this project](https://opentechinstitute.github.io/SOTI/SOTI.html) use data that come from the M-Lab NDT 
-tables in BigQuery. However, to get them in the right format and join them with census tract data, they get processed by Dataflow and 
-aggregated in R. The code for that pipeline is in this repository. 
+A repository for the working draft of the United States of Broadband project at OTI.
 
-## Running the Pipeline
-There are four scripts in this directory and one function file.
+The [maps on the landing page for this project](https://opentechinstitute.github.io/USBB/SOTI.html) use data that come from the M-Lab NDT 
+tables in BigQuery. To get them in the right format and join them with census tract data, they get processed by a Google Cloud Dataflow pipeline and aggregated using R. The code for that pipeline aggregation is in this repository. 
 
-The four scripts are:
+## Setup Development Environment
 
-1) pre_dataflow_dataset_import, which gets census data and writes it out in the right format for the Python dataflow script,
+* [Install R or R Studio](https://www.rstudio.com/)
+* [Google Cloud SDK](https://cloud.google.com/sdk/)
+* Python 2.7+ pip, virtualenv
+* [Install Apache Beam](https://beam.apache.org/get-started/quickstart-py/)
+  * **note**: the version of apache_beam in setup.py must exactly match the version installed on your development machine or in your Python `virtualenv`
 
-2) dataflow_spatial_join, which takes the output of the previous script and performs a spatial join with it,
+## Setup Project Resources
 
-3) post_dataflow_dataset_import, which gets the joined data from BigQuery after the dataflow script has run,
+* GCP project
+* GCP storage bucket with two subfolders
+  * staging (i.e. gs://critzo/USBB/staging )
+  * temp  (i.e. gs://critzo/USBB/temp )
+* BigQuery dataset (https://console.cloud.google.com/bigquery?project=mlab-sandbox&p=mlab-sandbox&d=USBB_critzo&page=dataset)
+* GCP service account
+  * IAM roles: BigQuery Data Owner, BigQuery Job User, Compute Viewer, Dataflow Developer, Dataflow Worker
+  * Service account is subscribed to [M-Lab Discuss Group](https://groups.google.com/a/measurementlab.net/forum/?pli=1#!managemembers/discuss)
+  * **TO DO: test more limited roles on specific resources rather than IAM project roles
+  * Create and download service account key (JSON) 
+    * Set local env var `GOOGLE_APPLICATION_CREDENTIALS` to point at JSON keyfile
 
-4) mapbox_pipeline_wrapper, which processes the BigQuery data and produces the geojson map layers and json data layer for Mapbox.
+## Import FCC Data as BigQuery Tables
 
-To use this pipeline, download the four script files in the repo as well as pipeline functions.R and put them in the same folder. 
+To interact with the FCC's form 477 data, we must import each release of that data into BigQuery tables.
 
-* Open 1,3, and 4 in R. 
-* If this is the first time you are running the pipeline, install the necessary libraries using `install.packages("<package name">)`
-* Set the working directory on lines 18 and 149
+* Download the CSV for each release from the FCC's page (for example: [June 2017](https://opendata.fcc.gov/Wireline/Fixed-Broadband-Deployment-Data-June-2017-Status-V/9r8r-g7ut)) 
+* Upload the CSV from a single time period to a GCS bucket
+* In the BigQuery web UI, create a new table from the CSV, selecting the CSV you uploaded in your GCS bucket. This will be an interim table, so name it something like `477_jun_2017_import`
+* Run SQL query #3 on this table, and then save the results to a new, final table. For example: `477_jun_2017`
 
-Run 1 and 2. 
+Repeat the above steps for any FCC data release that should be included.
 
-Follow the instructions for running the dataflow pipeline 1.ii
+## Files in this Repo
 
-Run 4.
+There are four scripts and one function file:
+
+**Scripts:**
+1. **pre_dataflow_dataset_import.R** - gets geographic shapes from the US Census and writes out JSON files in a format suitable for import as a BigQuery table.
+  * **TO DO: automate the creation of BigQuery tables using the Cloud SDK**
+  * note that we need to define the table schema in a json file and have the json shape data, in order to properly create the tables without error. autodetecting the schema from the shape data json may fail in some cases but not others.
+2. **dataflow_spatial_join.py** - Reads the BigQuery Tables created by #1, and performs a spatial join with US-wide NDT data, assings a geography field to the test data, and creates a new BigQuery table with the joined data.
+  * This script is currently run three times manually, once for each geography of interest, changing the BigQuery input/output table names in the script before running
+  * **TO DO: automate this so it isn't three times manually**
+  * Note: Ross' tract output JSON from #1 worked in this step, but not Chris' -- find out why
+3. **post_dataflow_dataset_import.R** - Queries the BigQuery tables of NDT data joined with geographies and calculates overall metrics for each geography of interest.
+4. **mapbox_pipeline_wrapper.R** - processes the BigQuery data downloaded in #3 and produces the geojson map layers and json data layer for Mapbox.
+
+**Functions:**
+* **pipeline functions.R** - R functions imported and used by the three R scripts listed above.
+
+## Running the pipeline
+
+**TL;DR Quick start**
+* Setup development environment
+* Create required GCP resources & accounts
+* Clone this repository, and open the folder in R or R Studio
+* Run **pre_dataflow_dataset_import.R**
+* Upload JSON output files to GCS: `$ gsutil cp dataflow_mapbox1_lower_combine.json.json  gs://critzo_usbb/`
+* Run **dataflow_spatial_join.py** x3
+* Follow the instructions for running the dataflow pipeline See below # 1.2
+* Run **post_dataflow_dataset_import.R**
 
 That will produce the geojson and json files that the Mapbox map embedded in the project landing page needs. The pipeline also produces 
-several other R objects as auxilliary files. These are data files that are used in mapbox_pipeline_wrapper.
+several other R objects as auxilliary files. These are data files that are used in `mapbox_pipeline_wrapper`.
 
 ## BQ Tables
 The BQ tables that are needed to run the pipeline all live in the thieme dataset inside the mlab-sandbox project. Many of the tables below have two names. This is because I did a bad job of naming them the first time around. The new, more regular names are the ones outside the parentheses. The older names are inside the parentheses. The reason I’m giving both is that BQ doesn’t allow for renaming tables, you have to copy the table to rename it. However, BQ also has a great record system that lets you follow the chain of what table was used to produce another table. Since those record use the original names, I’m keeping both for pipeline auditing purposes. 
@@ -86,13 +124,14 @@ The BQ tables that are needed to run the pipeline all live in the thieme dataset
 ## Adding a new dataset to the Mapbox map. 
 1. _If you need to add new geographic region:_
      1. Create a BQ table of stringified polygons like `thieme.Polygons_census_tract`. This table should come from a JSON and should have three variables, the identifier of the geographic regions (tract, district, etc), the stringified polygons themselves (in the form of [[x_1,y_1],[x_2,y_2],…,[x_n,y_n]]), and the region that polygon belongs to (state in the case of the U.S.).
-     2. Run dataflow_spatial_join.py in the opentechinstitute/SOTI. Some parameters need to be tweaked:
+     2. Run dataflow_spatial_join.py in the opentechinstitute/USBB. Some parameters need to be tweaked:
         1. In code block [1], the ‘district’ in  “tract = element['district']” should be changed to the name of the first variable in the JSON above (the identifier of the geographic regions)
         2. In code block [5], project, staging location, temp_location, and setup_file should be changed to the user’s locations. Likewise, machine-type, disk_size_gb, and num_workers should be set within the user’s financial constraints. 
         3. In code block [6], table and dataset should be set to the name of the table and dataset containing the polygons from step 1 above. 
         4. In code block [7], table and dataset should be set to the desired name for the output table of unique locations joined with geographic regions like `thieme.dataflow_output_census_tract`
      3. Run the first SQL query in opentechinstitute/SOTI/SQL_queries replacing “DATAFLOW_OUTPUT_TABLE” with the name of the BQ table produced by 1.ii. above. This query has to be saved to a table because the output is too large to display directly. This produces tables that are copies of the NDT table with an additional variable corresponding to the census district like `ndt_spatial_census_tract` above. 
-     4. Run the second SQL query in opentechinstitute/SOTI/SQL_queries replacing “OUTPUT_OF_ONE” with the name of the BQ table produced by 1.iii. This query has to be saved to a table because the output is too large to display directly. This produces tables containing aggregated statistics to be used in R like `Aggregated_MLab_DL_census` above.
+     4. Run the second SQL query in opentechinstitute/SOTI/SQL_queries replacing “OUTPUT_OF_ONE” with the name of the BQ table produced by 1.iii. This query has to be saved to a table because the output is too large to display directly. This produces tables containing aggregated statistics to be used in R like `Aggregated_MLab_DL_census` above. 
+
 2. _Adding new data to the JSON file output in R:_
 
 The R script “mapbox_pipeline_wrapper.R” outputs a JSON file that Mapbox uses to populate a map. The structure of the JSON is {county, leg:{house, senate}} and this structure is created from line 300 on. There are different kinds of new data you could add to this JSON and you follow slightly different processes for each. 
