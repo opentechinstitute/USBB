@@ -77,7 +77,7 @@ I'm a little hazier on how I built the FCC tables, but if I remember correctly, 
 
 For the maps, I added a new section onto `mapbox_pipeline_wrapper.R`, which I should have split out on its own but I was rushing and I wanted to have immediate access to the rest of the code for troubleshooting. I'm attaching it inside mapbox_pipeline_wrapper.R because that troubleshooting might still be useful. It's separated by a big ##THIS IS NEW##. 
 
-## End to End "run this shit" instructions
+## End to End quick instructions
 
 Quick Summary
 
