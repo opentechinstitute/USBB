@@ -19,7 +19,7 @@
 
 The pipeline needs to run once for each geometry. 
 
-1. Run the code in `pre_dataflow_dataset_import.R`
+1. Open R and run the code in `pre_dataflow_dataset_import.R`
 This R script obtains geographic data from the US Census using the `tidycensus` package, formats the data as JSON, and outputs that JSON to a local file. Currently this script does this with three geographies:  
   * **US census tracts** - dataflow_us_census_tract_shapes.json
   * **State Congressional Districts** - dataflow_us_state_house_shapes.json
@@ -30,12 +30,22 @@ This R script obtains geographic data from the US Census using the `tidycensus` 
       * `district`:STRING:NULLABLE
       * `Values`:STRING:REPEATED
       * `state`:STRING:NULLABLE
-2. Run the following:
+2. Setup your python virtual environment
+```
+  $ virtualenv ./
+  $ cd bin/
+  $ source activate
+  $ pip install apache_beam beam-io-utils
+  $ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/creds.json
+```
+
+3. Run the following one at a time:
   * dataflow_spatial_join_census_tracts.py
   * dataflow_spatial_join_state_house.py
   * dataflow_spatial_join_state_senate.py
 
-Once you've got that output, the SQL queries file takes the output of dataflow and gets it setup for the .R files: post_dataflow_dataset_import.R and mapbox_pipeline_wrapper.R
+4. Run `ndt_shape_join.py`
+
 
 ## BigQuery Tables
 
